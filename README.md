@@ -1,12 +1,12 @@
 # Cosabody™ ROI Calculator
 
-Single-page interactive calculator that projects Cosabody's documented field performance onto a customer's operating numbers. Built for sales conversations, customer follow-ups, and self-serve scenarios.
+Single-page interactive calculator that projects Cosabody™'s documented field performance onto a customer's operating numbers. Built for sales conversations, customer follow-ups, and self-serve scenarios.
 
 ---
 
 ## What it does
 
-Three species (turkey, broiler, layer) on a single page, each with its own tab. The customer enters their baseline operating numbers; the calculator applies Cosabody's locked, documented performance lift and shows projected additional output. An optional price input enables a conservative dollar projection.
+Three species (turkey, broiler, layer) on a single page, each with its own tab. The customer enters their baseline operating numbers; the calculator applies Cosabody™'s locked, documented performance lift and shows projected additional output. An optional price input enables a conservative dollar projection.
 
 Each result box updates independently as inputs are filled. No "submit" button — projections appear live.
 
@@ -59,7 +59,7 @@ A fixed Cosabody inclusion rate of **0.5 lb per ton of finished feed** (0.025%) 
 LIVABILITY_LIFT  = 0.065 (turkey)  | 0.016 (broiler)  | 0.016 (layer)
 FCR_LIFT         = 0.055 (turkey)  | 0.018 (broiler)  | n/a   (layer)
 EXTRA_EGGS_PER_HEN = 12 (layer only, productive life)
-INCLUSION_RATE   = 0.5 lb Cosabody per ton (2,000 lb) of finished feed
+INCLUSION_RATE   = 0.5 lb Cosabody™ per ton (2,000 lb) of finished feed
 LIVABILITY_CEILING = 0.99 (1% biological headroom)
 ```
 
@@ -94,7 +94,7 @@ productCost ($)      = cosabodyUsage × cosabodyCostPerLb
 bottomLine ($)       = topLineRevenue + feedCostSaved − extraFeedNeeded − productCost
 ```
 
-The bottom-line decomposition is shown directly in the calculator as an audit trail. Top-line revenue is gross. Bottom-line subtracts only Cosabody product cost and the net change in feed cost (extra feed needed minus FCR efficiency savings); it does NOT subtract incremental processing, placement, labor, or other variable costs that scale with output.
+The bottom-line decomposition is shown directly in the calculator as an audit trail. Top-line revenue is gross. Bottom-line subtracts only Cosabody™ product cost and the net change in feed cost (extra feed needed minus FCR efficiency savings); it does NOT subtract incremental processing, placement, labor, or other variable costs that scale with output.
 
 ### Layer
 
