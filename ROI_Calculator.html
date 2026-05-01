@@ -122,7 +122,7 @@
   /* ------------------------------------------------------------------ */
   /*  Hero                                                              */
   /* ------------------------------------------------------------------ */
-  .hero { padding: 10px 0 10px; border-bottom: 1.5px solid var(--species); margin-bottom: 10px; transition: border-color 200ms ease; }
+  .hero { padding: 12px 0 12px; border-bottom: 1.5px solid var(--species); margin-bottom: 14px; transition: border-color 200ms ease; }
   .hero h1 {
     font-size: 30px;
     font-weight: 700;
@@ -160,7 +160,7 @@
     grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.2fr);
     gap: 40px;
     align-items: start;
-    padding: 0;
+    padding: 0 0 8px;
   }
   @media (max-width: 820px) {
     .calc-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -227,20 +227,52 @@
   .inline-price {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 10px;
+    justify-content: center;
+    gap: 6px 8px;
+    margin-top: 12px;
     flex-wrap: wrap;
   }
+  .inline-price .cost-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    white-space: nowrap;
+  }
+  .economics-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .economics-row .econ-label {
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .economics-row .econ-divider {
+    color: var(--muted-light);
+    margin: 0 4px;
+  }
+  .economics-row span[id$="-out-net"],
+  .economics-row span[id$="-out-product-cost"],
+  .economics-row span[id$="-out-usage"] {
+    font-weight: 700;
+    color: var(--navy);
+  }
   .inline-price label {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     color: var(--ink);
     margin: 0;
     white-space: nowrap;
   }
   .inline-price .input-wrap.compact {
-    max-width: 200px;
-    height: 34px;
+    max-width: 115px;
+    height: 32px;
   }
   .inline-price .input-wrap.compact input {
     padding: 5px 10px;
@@ -248,8 +280,8 @@
   }
   .inline-price .input-wrap.compact .prefix,
   .inline-price .input-wrap.compact .suffix {
-    padding: 0 9px;
-    font-size: 12.5px;
+    padding: 0 7px;
+    font-size: 12px;
   }
   .inline-price-note {
     font-size: 11.5px;
@@ -273,8 +305,11 @@
     background: var(--species-bg);
     border: 1px solid var(--species);
     border-radius: 6px;
-    padding: 10px 12px 9px;
+    padding: 11px 12px 10px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     transition: background-color 200ms ease, border-color 200ms ease;
   }
   .stat-box.span-2 { grid-column: span 2; }
@@ -296,6 +331,9 @@
     color: var(--muted);
     margin-left: 4px;
     letter-spacing: 0;
+  }
+  .stat-box .stat-value .plus {
+    margin-right: 1px;
   }
   .stat-box .stat-label {
     margin-top: 6px;
@@ -338,10 +376,11 @@
 
   .head-to-head {
     text-align: center;
-    margin-top: 8px;
-    font-size: 12px;
+    margin-top: 10px;
+    font-size: 11.5px;
     font-style: italic;
     color: var(--muted);
+    line-height: 1.4;
   }
 
   /* ------------------------------------------------------------------ */
@@ -621,29 +660,41 @@
             </div>
             <div class="stat-box">
               <div class="stat-value" id="t-out-feed">&mdash;</div>
-              <div class="stat-label">FEED SAVINGS</div>
+              <div class="stat-label">FEED-EQUIVALENT VALUE</div>
               <div class="stat-sub">per year</div>
             </div>
             <div class="stat-box dollar" id="t-dollar-box" style="display:none;">
               <div class="stat-value large" id="t-out-dollar">&mdash;</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
-              <div class="stat-sub">yield only, feed savings excluded</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
+              <div class="stat-sub">gross, before product cost</div>
             </div>
             <div class="stat-box placeholder" id="t-dollar-placeholder">
-              <div class="stat-value">Enter price for $ projection</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
+              <div class="stat-value">Enter price for $ impact</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
             </div>
           </div>
           <div class="inline-price">
-            <label for="t-price">Price received, live weight</label>
+            <label for="t-price">Sale price (live-weight)</label>
             <div class="input-wrap compact">
               <span class="prefix">$</span>
               <input type="number" id="t-price" data-input="turkey" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01">
               <span class="suffix">/ lb</span>
             </div>
-            <span class="inline-price-note">optional &mdash; for $ projection</span>
+            <label for="t-cost" class="cost-label">Cosabody product cost</label>
+            <div class="input-wrap compact">
+              <span class="prefix">$</span>
+              <input type="number" id="t-cost" data-input="turkey" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+              <span class="suffix">/ lb</span>
+            </div>
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +6.5% livability, +5.5% FCR.</div>
+          <div class="economics-row">
+            <span class="econ-item"><span class="econ-label">Cosabody usage:</span> <span id="t-out-usage">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Product cost:</span> <span id="t-out-product-cost">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Net impact:</span> <span id="t-out-net">&mdash;</span></span>
+          </div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +6.5% livability, +5.5% FCR. At 0.5 lb Cosabody per ton of finished feed.</div>
         </div>
 
         <!-- Broiler results -->
@@ -661,29 +712,41 @@
             </div>
             <div class="stat-box">
               <div class="stat-value" id="b-out-feed">&mdash;</div>
-              <div class="stat-label">FEED SAVINGS</div>
+              <div class="stat-label">FEED-EQUIVALENT VALUE</div>
               <div class="stat-sub">per year</div>
             </div>
             <div class="stat-box dollar" id="b-dollar-box" style="display:none;">
               <div class="stat-value large" id="b-out-dollar">&mdash;</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
-              <div class="stat-sub">yield only, feed savings excluded</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
+              <div class="stat-sub">gross, before product cost</div>
             </div>
             <div class="stat-box placeholder" id="b-dollar-placeholder">
-              <div class="stat-value">Enter price for $ projection</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
+              <div class="stat-value">Enter price for $ impact</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
             </div>
           </div>
           <div class="inline-price">
-            <label for="b-price">Price received, live weight</label>
+            <label for="b-price">Sale price (live-weight)</label>
             <div class="input-wrap compact">
               <span class="prefix">$</span>
               <input type="number" id="b-price" data-input="broiler" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01">
               <span class="suffix">/ lb</span>
             </div>
-            <span class="inline-price-note">optional &mdash; for $ projection</span>
+            <label for="b-cost" class="cost-label">Cosabody product cost</label>
+            <div class="input-wrap compact">
+              <span class="prefix">$</span>
+              <input type="number" id="b-cost" data-input="broiler" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+              <span class="suffix">/ lb</span>
+            </div>
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1.8% FCR.</div>
+          <div class="economics-row">
+            <span class="econ-item"><span class="econ-label">Cosabody usage:</span> <span id="b-out-usage">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Product cost:</span> <span id="b-out-product-cost">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Net impact:</span> <span id="b-out-net">&mdash;</span></span>
+          </div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1.8% FCR. At 0.5 lb Cosabody per ton of finished feed.</div>
         </div>
 
         <!-- Layer results -->
@@ -701,29 +764,41 @@
             </div>
             <div class="stat-box">
               <div class="stat-value" id="l-out-feed">&mdash;</div>
-              <div class="stat-label">FEED SAVINGS</div>
+              <div class="stat-label">FEED-EQUIVALENT VALUE</div>
               <div class="stat-sub">per cohort</div>
             </div>
             <div class="stat-box dollar" id="l-dollar-box" style="display:none;">
               <div class="stat-value large" id="l-out-dollar">&mdash;</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
-              <div class="stat-sub">egg revenue only</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
+              <div class="stat-sub">per cohort, gross</div>
             </div>
             <div class="stat-box placeholder" id="l-dollar-placeholder">
-              <div class="stat-value">Enter price for $ projection</div>
-              <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
+              <div class="stat-value">Enter price for $ impact</div>
+              <div class="stat-label">TOP-LINE REVENUE IMPACT</div>
             </div>
           </div>
           <div class="inline-price">
-            <label for="l-price">Price received, per dozen</label>
+            <label for="l-price">Sale price (per dozen)</label>
             <div class="input-wrap compact">
               <span class="prefix">$</span>
               <input type="number" id="l-price" data-input="layer" data-key="pricePerDozen" placeholder="0.00" min="0" step="0.01">
-              <span class="suffix">/ dozen</span>
+              <span class="suffix">/ doz</span>
             </div>
-            <span class="inline-price-note">optional &mdash; for $ projection</span>
+            <label for="l-cost" class="cost-label">Cosabody product cost</label>
+            <div class="input-wrap compact">
+              <span class="prefix">$</span>
+              <input type="number" id="l-cost" data-input="layer" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+              <span class="suffix">/ lb</span>
+            </div>
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1 dozen extra eggs per hen, productive life.</div>
+          <div class="economics-row">
+            <span class="econ-item"><span class="econ-label">Cosabody usage:</span> <span id="l-out-usage">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Product cost:</span> <span id="l-out-product-cost">&mdash;</span></span>
+            <span class="econ-divider">|</span>
+            <span class="econ-item"><span class="econ-label">Net impact:</span> <span id="l-out-net">&mdash;</span></span>
+          </div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1 dozen extra eggs per hen, productive life. At 0.5 lb Cosabody per ton of finished feed.</div>
         </div>
       </div>
     </section>
@@ -733,9 +808,9 @@
   <!--  Credibility strip                                                  -->
   <!-- =================================================================== -->
   <section class="cred-strip">
-    <p class="cred-line-1" data-show-cred="turkey">These are the results of 2 million birds in the field.</p>
-    <p class="cred-line-1" data-show-cred="broiler">Improved every commercial flock fed, every time.</p>
-    <p class="cred-line-1" data-show-cred="layer">Proven across 20+ million layers since 2023.</p>
+    <p class="cred-line-1" data-show-cred="turkey">These projections are based on the results of 2 million birds in the field.</p>
+    <p class="cred-line-1" data-show-cred="broiler">These projections are based on every commercial flock fed, every one improved.</p>
+    <p class="cred-line-1" data-show-cred="layer">These projections are based on 20+ million layers since 2023.</p>
     <p class="cred-line-2">Real production data. Not pen trials.</p>
   </section>
 
@@ -821,20 +896,36 @@
     var addBirds = hasBase ? s.birds * liv * lifts.livabilityRel : null;
     // Additional live weight: needs birds + livability + weight
     var addWeight = (addBirds !== null && !!s.weight) ? addBirds * s.weight : null;
-    // Feed savings: needs birds + livability + weight + fcr
+    // Feed-equivalent value (productivity gain in feed terms): needs birds + livability + weight + fcr
     var cosaMarket = hasBase ? s.birds * liv * (1 + lifts.livabilityRel) : null;
     var feedSavings = (cosaMarket !== null && !!s.weight && !!s.fcr)
       ? cosaMarket * s.weight * s.fcr * lifts.fcrRel
       : null;
-    // Dollar uplift: needs addWeight (i.e. birds + livability + weight) + price
-    var dollarUplift = (addWeight !== null && s.pricePerLb && s.pricePerLb > 0)
+    // Cosabody usage (lb of product / yr): needs full feed chain
+    // Cosabody flock total feed = cosa_lb * baseline_FCR * (1 - fcrRel); usage = total_feed * 0.5/2000
+    var cosabodyUsage = (cosaMarket !== null && !!s.weight && !!s.fcr)
+      ? cosaMarket * s.weight * s.fcr * (1 - lifts.fcrRel) * 0.5 / 2000
+      : null;
+    // Top-line revenue impact: needs addWeight + price
+    var topLineRevenue = (addWeight !== null && s.pricePerLb && s.pricePerLb > 0)
       ? addWeight * s.pricePerLb
+      : null;
+    // Total Cosabody product cost: usage × cost
+    var productCost = (cosabodyUsage !== null && s.cosabodyCost && s.cosabodyCost > 0)
+      ? cosabodyUsage * s.cosabodyCost
+      : null;
+    // Net financial impact: top-line minus product cost
+    var netImpact = (topLineRevenue !== null && productCost !== null)
+      ? topLineRevenue - productCost
       : null;
     return {
       addBirds: addBirds,
       addWeight: addWeight,
       feedSavings: feedSavings,
-      dollarUplift: dollarUplift
+      dollarUplift: topLineRevenue,
+      cosabodyUsage: cosabodyUsage,
+      productCost: productCost,
+      netImpact: netImpact
     };
   }
 
@@ -848,27 +939,45 @@
     var addSurvivors = hasBase ? s.pullets * liv * LIFTS.layer.livabilityRel : null;
     // Additional dozens of eggs: needs pullets + livability + eggsPerHen
     var totalAddDozens = null;
+    var cosaSurvivors = null;
     if (addSurvivors !== null && !!s.eggsPerHen) {
-      var cosaSurvivors = s.pullets * liv * (1 + LIFTS.layer.livabilityRel);
+      cosaSurvivors = s.pullets * liv * (1 + LIFTS.layer.livabilityRel);
       var eggsFromExtraHens   = addSurvivors * s.eggsPerHen;
       var eggsFromExtraPerHen = cosaSurvivors * LIFTS.layer.extraEggsPerHen;
       totalAddDozens = (eggsFromExtraHens + eggsFromExtraPerHen) / 12;
     }
-    // Feed savings (feed-equivalent value of the extra dozens at baseline FCR):
-    // additional dozens × baseline lb feed per dozen.
-    // Needs totalAddDozens + fcr.
+    // Feed-equivalent value of the productivity gain: additional dozens × baseline FCR.
     var feedSavings = (totalAddDozens !== null && !!s.fcr)
       ? totalAddDozens * s.fcr
       : null;
-    // Dollar uplift: needs totalAddDozens + pricePerDozen
-    var dollarUplift = (totalAddDozens !== null && s.pricePerDozen && s.pricePerDozen > 0)
+    // Cosabody usage (lb of product / cohort): needs full chain
+    // Cosabody flock total feed = cosa_dozens_total × baseline_FCR
+    var cosabodyUsage = null;
+    if (cosaSurvivors !== null && !!s.eggsPerHen && !!s.fcr) {
+      var cosaTotalDozens = cosaSurvivors * (s.eggsPerHen + LIFTS.layer.extraEggsPerHen) / 12;
+      var cosaTotalFeed = cosaTotalDozens * s.fcr;
+      cosabodyUsage = cosaTotalFeed * 0.5 / 2000;
+    }
+    // Top-line revenue impact: needs totalAddDozens + pricePerDozen
+    var topLineRevenue = (totalAddDozens !== null && s.pricePerDozen && s.pricePerDozen > 0)
       ? totalAddDozens * s.pricePerDozen
+      : null;
+    // Total Cosabody product cost: usage × cost
+    var productCost = (cosabodyUsage !== null && s.cosabodyCost && s.cosabodyCost > 0)
+      ? cosabodyUsage * s.cosabodyCost
+      : null;
+    // Net financial impact
+    var netImpact = (topLineRevenue !== null && productCost !== null)
+      ? topLineRevenue - productCost
       : null;
     return {
       addSurvivors: addSurvivors,
       totalAddDozens: totalAddDozens,
       feedSavings: feedSavings,
-      dollarUplift: dollarUplift
+      dollarUplift: topLineRevenue,
+      cosabodyUsage: cosabodyUsage,
+      productCost: productCost,
+      netImpact: netImpact
     };
   }
 
@@ -880,14 +989,38 @@
     if (value === null || value === undefined) {
       el.textContent = DASH;
     } else {
-      el.innerHTML = fmtInt.format(Math.round(value)) + ' <span class="unit">' + unit + '</span>';
+      el.innerHTML = '<span class="plus">+</span>' + fmtInt.format(Math.round(value)) + ' <span class="unit">' + unit + '</span>';
     }
   }
   function setDollarBox(boxSel, placeholderSel, valueSel, dollarValue) {
     var has = (dollarValue !== null && dollarValue !== undefined);
     $(boxSel).style.display = has ? 'block' : 'none';
     $(placeholderSel).style.display = has ? 'none' : 'block';
-    if (has) $(valueSel).textContent = fmtDollar.format(Math.round(dollarValue));
+    if (has) $(valueSel).innerHTML = '<span class="plus">+</span>' + fmtDollar.format(Math.round(dollarValue));
+  }
+
+  // Helper for the inline economics row (smaller text, no big-number formatting)
+  function setEconUsage(selector, value) {
+    var el = $(selector);
+    if (value === null || value === undefined) {
+      el.textContent = DASH;
+    } else {
+      el.textContent = fmtInt.format(Math.round(value)) + ' lb';
+    }
+  }
+  function setEconDollar(selector, value, signed) {
+    var el = $(selector);
+    if (value === null || value === undefined) {
+      el.textContent = DASH;
+      return;
+    }
+    var rounded = Math.round(value);
+    if (signed) {
+      var sign = rounded >= 0 ? '+' : '−';   // unicode minus for negative
+      el.textContent = sign + fmtDollar.format(Math.abs(rounded));
+    } else {
+      el.textContent = fmtDollar.format(rounded);
+    }
   }
 
   function renderTurkey() {
@@ -896,6 +1029,9 @@
     setStat('#t-out-weight', r.addWeight,   'lb');
     setStat('#t-out-feed',   r.feedSavings, 'lb');
     setDollarBox('#t-dollar-box', '#t-dollar-placeholder', '#t-out-dollar', r.dollarUplift);
+    setEconUsage('#t-out-usage', r.cosabodyUsage);
+    setEconDollar('#t-out-product-cost', r.productCost);
+    setEconDollar('#t-out-net', r.netImpact, true);
   }
 
   function renderBroiler() {
@@ -904,6 +1040,9 @@
     setStat('#b-out-weight', r.addWeight,   'lb');
     setStat('#b-out-feed',   r.feedSavings, 'lb');
     setDollarBox('#b-dollar-box', '#b-dollar-placeholder', '#b-out-dollar', r.dollarUplift);
+    setEconUsage('#b-out-usage', r.cosabodyUsage);
+    setEconDollar('#b-out-product-cost', r.productCost);
+    setEconDollar('#b-out-net', r.netImpact, true);
   }
 
   function renderLayer() {
@@ -912,6 +1051,9 @@
     setStat('#l-out-dozens', r.totalAddDozens, 'dozen');
     setStat('#l-out-feed',   r.feedSavings,    'lb');
     setDollarBox('#l-dollar-box', '#l-dollar-placeholder', '#l-out-dollar', r.dollarUplift);
+    setEconUsage('#l-out-usage', r.cosabodyUsage);
+    setEconDollar('#l-out-product-cost', r.productCost);
+    setEconDollar('#l-out-net', r.netImpact, true);
   }
 
   function renderAll() {
