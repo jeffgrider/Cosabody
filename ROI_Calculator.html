@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cosabody ROI Calculator</title>
+<title>Cosabody™ ROI Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400;1,700&display=swap">
@@ -284,8 +284,7 @@
     color: var(--muted);
     font-weight: 500;
   }
-  .fin-row .fin-label.sign-pos { color: var(--ink); }
-  .fin-row .fin-label.sign-neg { color: var(--ink); }
+
   .fin-row .fin-value {
     font-weight: 700;
     color: var(--navy);
@@ -588,7 +587,7 @@
 
   <div class="accent-stripe"></div>
   <div class="brand-bar">
-    <span>COSABODY&trade;</span>
+    <span>COSABODY™</span>
     <span class="divider">|</span>
     <span class="tag">ROI CALCULATOR</span>
   </div>
@@ -606,7 +605,7 @@
         <span data-show="broiler">Project the impact <span class="accent">on your broiler operation.</span></span>
         <span data-show="layer">Project the impact <span class="accent">on your layer operation.</span></span>
       </h1>
-      <p class="subtitle">Cosabody&rsquo;s documented field results, applied to your operating numbers.</p>
+      <p class="subtitle">Cosabody™&rsquo;s documented field results, applied to your operating numbers.</p>
     </section>
 
     <section class="calc-grid">
@@ -723,7 +722,7 @@
       <!--  Results column                                               -->
       <!-- ============================================================ -->
       <div class="results-col">
-        <div class="eyebrow">PROJECTED IMPACT WITH COSABODY</div>
+        <div class="eyebrow">PROJECTED IMPACT WITH COSABODY™</div>
 
         <!-- Turkey results -->
         <div data-show="turkey">
@@ -759,15 +758,15 @@
                 <label for="t-price">Sale price (live-weight)</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="t-price" data-input="turkey" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="t-price" data-input="turkey" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ lb</span>
                 </div>
               </div>
               <div class="fin-input-row">
-                <label for="t-cost">Cosabody product cost</label>
+                <label for="t-cost">Cosabody™ product cost</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="t-cost" data-input="turkey" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="t-cost" data-input="turkey" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ lb</span>
                 </div>
               </div>
@@ -775,7 +774,7 @@
                 <label for="t-feed-cost">Feed cost per ton</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="t-feed-cost" data-input="turkey" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1">
+                  <input type="number" id="t-feed-cost" data-input="turkey" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1" data-money="2">
                   <span class="suffix">/ ton</span>
                 </div>
               </div>
@@ -786,29 +785,29 @@
                 <span class="fin-value" id="t-out-topline">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-pos">+ Feed cost saved</span>
+                <span class="fin-label">Feed cost saved</span>
                 <span class="fin-value" id="t-out-feed-saved">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Extra feed needed</span>
+                <span class="fin-label">Extra feed needed</span>
                 <span class="fin-value" id="t-out-extra-feed">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Cosabody product cost</span>
+                <span class="fin-label">Cosabody™ product cost</span>
                 <span class="fin-value" id="t-out-product-cost">&mdash;</span>
               </div>
               <div class="fin-row bottom-line-row">
-                <span class="fin-label">= Bottom-line impact</span>
+                <span class="fin-label">Bottom-line impact</span>
                 <span class="fin-value bottom-line" id="t-out-bottom">&mdash;</span>
               </div>
             </div>
           </div>
           <div class="fin-detail">
-            Feed consumed (Cosabody flock): <span id="t-out-feed-cosa">&mdash;</span>
+            Feed consumed (Cosabody™ flock): <span id="t-out-feed-cosa">&mdash;</span>
             <span class="sep">vs.</span>
             baseline: <span id="t-out-feed-base">&mdash;</span>
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +6.5% livability, +5.5% FCR. At 0.5 lb Cosabody per ton finished feed.</div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +6.5% livability, +5.5% FCR. At 0.5 lb Cosabody™ per ton finished feed.</div>
         </div>
 
         <!-- Broiler results -->
@@ -845,15 +844,15 @@
                 <label for="b-price">Sale price (live-weight)</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="b-price" data-input="broiler" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="b-price" data-input="broiler" data-key="pricePerLb" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ lb</span>
                 </div>
               </div>
               <div class="fin-input-row">
-                <label for="b-cost">Cosabody product cost</label>
+                <label for="b-cost">Cosabody™ product cost</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="b-cost" data-input="broiler" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="b-cost" data-input="broiler" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ lb</span>
                 </div>
               </div>
@@ -861,7 +860,7 @@
                 <label for="b-feed-cost">Feed cost per ton</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="b-feed-cost" data-input="broiler" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1">
+                  <input type="number" id="b-feed-cost" data-input="broiler" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1" data-money="2">
                   <span class="suffix">/ ton</span>
                 </div>
               </div>
@@ -872,29 +871,29 @@
                 <span class="fin-value" id="b-out-topline">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-pos">+ Feed cost saved</span>
+                <span class="fin-label">Feed cost saved</span>
                 <span class="fin-value" id="b-out-feed-saved">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Extra feed needed</span>
+                <span class="fin-label">Extra feed needed</span>
                 <span class="fin-value" id="b-out-extra-feed">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Cosabody product cost</span>
+                <span class="fin-label">Cosabody™ product cost</span>
                 <span class="fin-value" id="b-out-product-cost">&mdash;</span>
               </div>
               <div class="fin-row bottom-line-row">
-                <span class="fin-label">= Bottom-line impact</span>
+                <span class="fin-label">Bottom-line impact</span>
                 <span class="fin-value bottom-line" id="b-out-bottom">&mdash;</span>
               </div>
             </div>
           </div>
           <div class="fin-detail">
-            Feed consumed (Cosabody flock): <span id="b-out-feed-cosa">&mdash;</span>
+            Feed consumed (Cosabody™ flock): <span id="b-out-feed-cosa">&mdash;</span>
             <span class="sep">vs.</span>
             baseline: <span id="b-out-feed-base">&mdash;</span>
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1.8% FCR. At 0.5 lb Cosabody per ton finished feed.</div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +1.8% FCR. At 0.5 lb Cosabody™ per ton finished feed.</div>
         </div>
 
         <!-- Layer results -->
@@ -931,15 +930,15 @@
                 <label for="l-price">Sale price (per dozen)</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="l-price" data-input="layer" data-key="pricePerDozen" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="l-price" data-input="layer" data-key="pricePerDozen" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ doz</span>
                 </div>
               </div>
               <div class="fin-input-row">
-                <label for="l-cost">Cosabody product cost</label>
+                <label for="l-cost">Cosabody™ product cost</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="l-cost" data-input="layer" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01">
+                  <input type="number" id="l-cost" data-input="layer" data-key="cosabodyCost" placeholder="0.00" min="0" step="0.01" data-money="2">
                   <span class="suffix">/ lb</span>
                 </div>
               </div>
@@ -947,7 +946,7 @@
                 <label for="l-feed-cost">Feed cost per ton</label>
                 <div class="input-wrap compact">
                   <span class="prefix">$</span>
-                  <input type="number" id="l-feed-cost" data-input="layer" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1">
+                  <input type="number" id="l-feed-cost" data-input="layer" data-key="feedCostPerTon" placeholder="0.00" min="0" step="1" data-money="2">
                   <span class="suffix">/ ton</span>
                 </div>
               </div>
@@ -958,15 +957,15 @@
                 <span class="fin-value" id="l-out-topline">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Feed cost of extra output</span>
+                <span class="fin-label">Feed cost of extra output</span>
                 <span class="fin-value" id="l-out-extra-feed">&mdash;</span>
               </div>
               <div class="fin-row">
-                <span class="fin-label sign-neg">− Cosabody product cost</span>
+                <span class="fin-label">Cosabody™ product cost</span>
                 <span class="fin-value" id="l-out-product-cost">&mdash;</span>
               </div>
               <div class="fin-row bottom-line-row">
-                <span class="fin-label">= Bottom-line impact</span>
+                <span class="fin-label">Bottom-line impact</span>
                 <span class="fin-value bottom-line" id="l-out-bottom">&mdash;</span>
               </div>
             </div>
@@ -976,7 +975,7 @@
             <span class="sep">,</span>
             same as baseline. More dozens at the same per-unit feed cost.
           </div>
-          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +12 eggs per hen. At 0.5 lb Cosabody per ton finished feed.</div>
+          <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +12 eggs per hen. At 0.5 lb Cosabody™ per ton finished feed.</div>
         </div>
       </div>
     </section>
@@ -1006,7 +1005,7 @@
     </div>
       <div class="footer-info">
         <p class="disclaimer">
-      Projected outcomes only. Results not guaranteed. No regulatory or therapeutic claims made or implied. This calculator applies Cosabody&rsquo;s documented performance lift relative to the baselines you enter; actual outcomes depend on factors specific to your operation. Top-line revenue impact is gross. Bottom-line impact reflects revenue, Cosabody product cost, and the net change in feed cost (which already includes the FCR efficiency gain). Bottom-line does not subtract incremental processing, placement, labor, or other variable costs that scale with output.
+      Projected outcomes only. Results not guaranteed. No regulatory or therapeutic claims made or implied. This calculator applies Cosabody™&rsquo;s documented performance lift relative to the baselines you enter; actual outcomes depend on factors specific to your operation. Top-line revenue impact is gross. Bottom-line impact reflects revenue, Cosabody™ product cost, and the net change in feed cost (which already includes the FCR efficiency gain). Bottom-line does not subtract incremental processing, placement, labor, or other variable costs that scale with output.
     </p>
       </div>
     </div>
@@ -1252,19 +1251,26 @@
       el.textContent = fmtInt.format(Math.round(value)) + ' lb';
     }
   }
-  function setEconDollar(selector, value, signed) {
+  function setEconDollar(selector, value, mode) {
+    // mode: 'plain' (default) | 'signed' | 'pos' | 'neg'
+    //   plain  -> $X
+    //   signed -> +$X for positive, −$X for negative
+    //   pos    -> +$X (always; for positive contributions in audit trail)
+    //   neg    -> −$X (always; for negative contributions in audit trail)
+    // Backwards-compat: passing `true` is the same as 'signed'.
+    if (mode === true) mode = 'signed';
     var el = $(selector);
     if (value === null || value === undefined) {
       el.textContent = DASH;
       return;
     }
     var rounded = Math.round(value);
-    if (signed) {
-      var sign = rounded >= 0 ? '+' : '−';   // unicode minus for negative
-      el.textContent = sign + fmtDollar.format(Math.abs(rounded));
-    } else {
-      el.textContent = fmtDollar.format(rounded);
-    }
+    var abs = Math.abs(rounded);
+    var sign = '';
+    if (mode === 'signed') sign = rounded >= 0 ? '+' : '−';
+    else if (mode === 'pos') sign = '+';
+    else if (mode === 'neg') sign = '−';
+    el.textContent = sign + fmtDollar.format(abs);
   }
 
   function renderTurkey() {
@@ -1273,11 +1279,11 @@
     setStat('#t-out-weight', r.addWeight,   'lb');
     setStatDollar('#t-out-feed', r.feedSavings, true);
     setDollarBox('#t-dollar-box', '#t-dollar-placeholder', '#t-out-dollar', r.dollarUplift);
-    setEconDollar('#t-out-topline', r.dollarUplift, true);
-    setEconDollar('#t-out-feed-saved', r.feedSavings);
-    setEconDollar('#t-out-extra-feed', r.extraFeedNeededCost);
-    setEconDollar('#t-out-product-cost', r.productCost);
-    setEconDollar('#t-out-bottom', r.bottomLine, true);
+    setEconDollar('#t-out-topline', r.dollarUplift, 'signed');
+    setEconDollar('#t-out-feed-saved', r.feedSavings, 'pos');
+    setEconDollar('#t-out-extra-feed', r.extraFeedNeededCost, 'neg');
+    setEconDollar('#t-out-product-cost', r.productCost, 'neg');
+    setEconDollar('#t-out-bottom', r.bottomLine, 'signed');
     setEconUsage('#t-out-feed-cosa', r.feedConsumedCosa);
     setEconUsage('#t-out-feed-base', r.feedConsumedBaseline);
   }
@@ -1288,11 +1294,11 @@
     setStat('#b-out-weight', r.addWeight,   'lb');
     setStatDollar('#b-out-feed', r.feedSavings, true);
     setDollarBox('#b-dollar-box', '#b-dollar-placeholder', '#b-out-dollar', r.dollarUplift);
-    setEconDollar('#b-out-topline', r.dollarUplift, true);
-    setEconDollar('#b-out-feed-saved', r.feedSavings);
-    setEconDollar('#b-out-extra-feed', r.extraFeedNeededCost);
-    setEconDollar('#b-out-product-cost', r.productCost);
-    setEconDollar('#b-out-bottom', r.bottomLine, true);
+    setEconDollar('#b-out-topline', r.dollarUplift, 'signed');
+    setEconDollar('#b-out-feed-saved', r.feedSavings, 'pos');
+    setEconDollar('#b-out-extra-feed', r.extraFeedNeededCost, 'neg');
+    setEconDollar('#b-out-product-cost', r.productCost, 'neg');
+    setEconDollar('#b-out-bottom', r.bottomLine, 'signed');
     setEconUsage('#b-out-feed-cosa', r.feedConsumedCosa);
     setEconUsage('#b-out-feed-base', r.feedConsumedBaseline);
   }
@@ -1303,10 +1309,10 @@
     setStat('#l-out-dozens', r.totalAddDozens, 'dozen');
     setStatDollar('#l-out-feed', r.feedSavings, false);
     setDollarBox('#l-dollar-box', '#l-dollar-placeholder', '#l-out-dollar', r.dollarUplift);
-    setEconDollar('#l-out-topline', r.dollarUplift, true);
-    setEconDollar('#l-out-extra-feed', r.feedSavings);
-    setEconDollar('#l-out-product-cost', r.productCost);
-    setEconDollar('#l-out-bottom', r.bottomLine, true);
+    setEconDollar('#l-out-topline', r.dollarUplift, 'signed');
+    setEconDollar('#l-out-extra-feed', r.feedSavings, 'neg');
+    setEconDollar('#l-out-product-cost', r.productCost, 'neg');
+    setEconDollar('#l-out-bottom', r.bottomLine, 'signed');
     // Layer-specific: show feed cost per dozen only when both FCR + feed cost are entered
     var fcdContainer = document.getElementById('l-feedcost-detail');
     var fcdEl = document.getElementById('l-out-feedcost-per-doz');
@@ -1358,12 +1364,21 @@
   // ------- Wire inputs -------
   $$('input[data-input]').forEach(function (el) {
     var doFormat = el.getAttribute('data-format') === 'commas';
+    var moneyDecimals = el.getAttribute('data-money');
     el.addEventListener('input', function () {
       if (doFormat) formatCommaInput(el);
       renderAll();
     });
     el.addEventListener('blur', function () {
       if (doFormat) formatCommaInput(el);
+      // On blur, format dollar inputs to fixed decimal places (e.g. "1.5" -> "1.50")
+      if (moneyDecimals !== null && el.value !== '' && el.value !== null) {
+        var n = Number(el.value);
+        if (!isNaN(n)) {
+          if (n < 0) n = 0;
+          el.value = n.toFixed(parseInt(moneyDecimals, 10));
+        }
+      }
       renderAll();
     });
   });
