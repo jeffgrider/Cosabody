@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -572,7 +573,6 @@
               <input type="text" inputmode="numeric" id="l-pullets" data-input="layer" data-key="pullets" data-format="commas" placeholder="e.g. 100,000">
               <span class="suffix">pullets</span>
             </div>
-            <div class="hint">Each cohort runs through full productive life</div>
           </div>
           <div class="input-group">
             <label for="l-livability">Baseline livability through productive life</label>
@@ -588,7 +588,13 @@
               <input type="text" inputmode="numeric" id="l-eggs" data-input="layer" data-key="eggsPerHen" data-format="commas" placeholder="e.g. 320">
               <span class="suffix">eggs</span>
             </div>
-            <div class="hint">Across productive life, surviving hens</div>
+          </div>
+          <div class="input-group">
+            <label for="l-fcr">Baseline feed conversion ratio</label>
+            <div class="input-wrap">
+              <input type="number" id="l-fcr" data-input="layer" data-key="fcr" placeholder="e.g. 3.50" min="0" step="0.01">
+              <span class="suffix">lb / doz</span>
+            </div>
           </div>
 
         </div>
@@ -693,13 +699,18 @@
               <div class="stat-label">ADDITIONAL DOZENS OF EGGS</div>
               <div class="stat-sub">per cohort</div>
             </div>
-            <div class="stat-box span-2 dollar" id="l-dollar-box" style="display:none;">
+            <div class="stat-box">
+              <div class="stat-value" id="l-out-feed">&mdash;</div>
+              <div class="stat-label">FEED SAVINGS</div>
+              <div class="stat-sub">per cohort</div>
+            </div>
+            <div class="stat-box dollar" id="l-dollar-box" style="display:none;">
               <div class="stat-value large" id="l-out-dollar">&mdash;</div>
               <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
-              <div class="stat-sub">per cohort, egg revenue only</div>
+              <div class="stat-sub">egg revenue only</div>
             </div>
-            <div class="stat-box span-2 placeholder" id="l-dollar-placeholder">
-              <div class="stat-value">Enter price per dozen for $ projection</div>
+            <div class="stat-box placeholder" id="l-dollar-placeholder">
+              <div class="stat-value">Enter price for $ projection</div>
               <div class="stat-label">PROJECTED REVENUE UPLIFT</div>
             </div>
           </div>
@@ -843,6 +854,12 @@
       var eggsFromExtraPerHen = cosaSurvivors * LIFTS.layer.extraEggsPerHen;
       totalAddDozens = (eggsFromExtraHens + eggsFromExtraPerHen) / 12;
     }
+    // Feed savings (feed-equivalent value of the extra dozens at baseline FCR):
+    // additional dozens × baseline lb feed per dozen.
+    // Needs totalAddDozens + fcr.
+    var feedSavings = (totalAddDozens !== null && !!s.fcr)
+      ? totalAddDozens * s.fcr
+      : null;
     // Dollar uplift: needs totalAddDozens + pricePerDozen
     var dollarUplift = (totalAddDozens !== null && s.pricePerDozen && s.pricePerDozen > 0)
       ? totalAddDozens * s.pricePerDozen
@@ -850,6 +867,7 @@
     return {
       addSurvivors: addSurvivors,
       totalAddDozens: totalAddDozens,
+      feedSavings: feedSavings,
       dollarUplift: dollarUplift
     };
   }
@@ -892,6 +910,7 @@
     var r = calcLayer(readState('layer'));
     setStat('#l-out-hens',   r.addSurvivors,   'hens');
     setStat('#l-out-dozens', r.totalAddDozens, 'dozen');
+    setStat('#l-out-feed',   r.feedSavings,    'lb');
     setDollarBox('#l-dollar-box', '#l-dollar-placeholder', '#l-out-dollar', r.dollarUplift);
   }
 
