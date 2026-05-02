@@ -272,8 +272,6 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 
 For changes to performance numbers, brand language, or new species:
 
-**sales@optumimmunity.com**
-317.490.0754
 www.optumimmunity.com
 
 Optum Immunity™ • 700 Commercial Avenue • Waterloo, WI 53594
