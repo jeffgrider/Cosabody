@@ -14,7 +14,7 @@ Each result box updates independently as inputs are filled. No "submit" button �
 
 ## File
 
-- **`Cosabody_ROI_Calculator.html`** — single self-contained file (~120 KB)
+- **`Cosabody_ROI_Calculator.html`** — single self-contained file (~140 KB)
 - No external dependencies except Roboto from the Google Fonts CDN
 - Optum Immunity logo inlined as base64
 - Works in any modern browser (Chrome, Safari, Firefox, Edge)
@@ -229,7 +229,9 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 | Hint text under inputs | `class="hint"` |
 | Head-to-head footnote | `class="head-to-head"` |
 | Placeholder example values | `placeholder="e.g.` |
-| Contact / address footer | `class="contact-line"` and `class="address-line"` |
+| The closing-CTA email contact | `class="closing-row"` |
+| The footer website link | `class="contact-line"` |
+| The footer address line | `class="address-line"` |
 | Per-species color tokens | `body[data-species=` |
 
 ---
@@ -239,7 +241,7 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 - Two-column calc grid: inputs on the left, projected impact stat boxes on the right
 - The price input lives in the right column directly under the stat boxes — pairs with the dollar projection visually and balances column heights
 - Two-column footer: closing CTA + Optum logo on the left, disclaimer on the right with a thin species-color vertical separator
-- Centered contact / address strip below the footer grid
+- Centered website strip and address line below the footer grid (website on top, address underneath)
 - Responsive: stacks to single column below 820 px wide
 
 ---
@@ -251,7 +253,7 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 - Three species (turkey, broiler, layer) with locked lifts
 - Empty inputs with placeholder example hints
 - Dependency-aware result boxes (each updates independently)
-- Two-column footer with centered contact strip
+- Two-column footer with centered website and address strip
 - Layer copy uses "productive life" throughout
 - Layer view matches turkey/broiler with 4 inputs + 2×2 stat grid
 - All currency stat boxes display dollar values (Feed cost saved / Feed cost of extra output)
@@ -262,6 +264,7 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 - Livability cap at 99% (biological headroom); cap returns 0 effective lift when baseline ≥ 99%
 - Input sanitization: livability clamped to 0–100; all inputs clamped to non-negative
 - Cred lines reframed across all species: "These projections are based on…"
+- Footer contact strip simplified to website-only (email and phone removed; closing-CTA email contact retained)
 
 ---
 
