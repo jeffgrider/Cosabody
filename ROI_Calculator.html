@@ -227,7 +227,7 @@
   /* Financials block: two-column layout (inputs left, outputs right) */
   .financials {
     display: grid;
-    grid-template-columns: 1fr 1.15fr;
+    grid-template-columns: auto 1fr;
     gap: 14px;
     margin-top: 8px;
     align-items: start;
@@ -283,12 +283,14 @@
   .fin-row .fin-label {
     color: var(--muted);
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .fin-row .fin-value {
     font-weight: 700;
     color: var(--navy);
     text-align: right;
+    white-space: nowrap;
   }
   .fin-row.bottom-line-row {
     margin-top: 2px;
@@ -313,6 +315,7 @@
     font-size: 10.5px;
     color: var(--muted);
     font-style: italic;
+    min-height: 32px;
   }
   .fin-detail span[id$="-out-feed-cosa"],
   .fin-detail span[id$="-out-feed-base"] {
@@ -385,6 +388,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-height: 95px;
     transition: background-color 200ms ease, border-color 200ms ease;
   }
   .stat-box.span-2 { grid-column: span 2; }
@@ -460,6 +464,7 @@
     font-style: italic;
     color: var(--muted);
     line-height: 1.4;
+    min-height: 32px;
   }
 
   /* ------------------------------------------------------------------ */
@@ -706,6 +711,7 @@
               <input type="text" inputmode="numeric" id="l-eggs" data-input="layer" data-key="eggsPerHen" data-format="commas" placeholder="e.g. 320">
               <span class="suffix">eggs</span>
             </div>
+            <div class="hint" id="l-eggs-hint">e.g. 320 eggs &asymp; 26.7 dozen per hen</div>
           </div>
           <div class="input-group">
             <label for="l-fcr">Baseline feed conversion ratio</label>
@@ -901,8 +907,8 @@
           <div class="stat-grid">
             <div class="stat-box">
               <div class="stat-value" id="l-out-hens">&mdash;</div>
-              <div class="stat-label">ADDITIONAL HENS THROUGH CYCLE</div>
-              <div class="stat-sub">per cohort</div>
+              <div class="stat-label">ADDITIONAL HENS</div>
+              <div class="stat-sub">surviving, per cohort</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="l-out-dozens">&mdash;</div>
@@ -956,6 +962,13 @@
                 <span class="fin-label">Top-line revenue</span>
                 <span class="fin-value" id="l-out-topline">&mdash;</span>
               </div>
+              <!-- Spacer row: layer has no FCR lift so no "Feed cost saved" line.
+                   Reserves vertical space to keep the navy cred strip aligned with
+                   turkey/broiler pages. visibility:hidden, not display:none. -->
+              <div class="fin-row" style="visibility:hidden;" aria-hidden="true">
+                <span class="fin-label">&nbsp;</span>
+                <span class="fin-value">&mdash;</span>
+              </div>
               <div class="fin-row">
                 <span class="fin-label">Feed cost of extra output</span>
                 <span class="fin-value" id="l-out-extra-feed">&mdash;</span>
@@ -970,10 +983,10 @@
               </div>
             </div>
           </div>
-          <div class="fin-detail" id="l-feedcost-detail" style="display:none;">
+          <div class="fin-detail" id="l-feedcost-detail" style="visibility:hidden;">
             Feed cost per dozen: <span id="l-out-feedcost-per-doz">&mdash;</span>
             <span class="sep">,</span>
-            same as baseline. More dozens at the same per-unit feed cost.
+            identical to baseline.
           </div>
           <div class="head-to-head">Head-to-head vs. control. Locked lifts: +1.6% livability, +12 eggs per hen. At 0.5 lb Cosabody™ per ton finished feed.</div>
         </div>
@@ -1300,7 +1313,8 @@
   }
 
   function renderLayer() {
-    var r = calcLayer(readState('layer'));
+    var s = readState('layer');
+    var r = calcLayer(s);
     setStat('#l-out-hens',   r.addSurvivors,   'hens');
     setStat('#l-out-dozens', r.totalAddDozens, 'dozen');
     setStatDollar('#l-out-feed', r.feedSavings, false);
@@ -1309,11 +1323,22 @@
     setEconDollar('#l-out-extra-feed', r.feedSavings, 'neg');
     setEconDollar('#l-out-product-cost', r.productCost, 'neg');
     setEconDollar('#l-out-bottom', r.bottomLine, 'signed');
+    // Layer-specific: live eggs->dozens helper under the eggs input
+    var eggsHint = document.getElementById('l-eggs-hint');
+    if (eggsHint) {
+      var eggs = (typeof s.eggsPerHen === 'number' && s.eggsPerHen > 0) ? s.eggsPerHen : null;
+      if (eggs) {
+        var dozens = eggs / 12;
+        eggsHint.textContent = eggs.toLocaleString() + ' eggs \u2248 ' + dozens.toFixed(1) + ' dozen per hen';
+      } else {
+        eggsHint.textContent = 'e.g. 320 eggs \u2248 26.7 dozen per hen';
+      }
+    }
     // Layer-specific: show feed cost per dozen only when both FCR + feed cost are entered
     var fcdContainer = document.getElementById('l-feedcost-detail');
     var fcdEl = document.getElementById('l-out-feedcost-per-doz');
     var hasFcd = (r.feedCostPerDozen !== null && r.feedCostPerDozen !== undefined);
-    if (fcdContainer) fcdContainer.style.display = hasFcd ? 'block' : 'none';
+    if (fcdContainer) fcdContainer.style.visibility = hasFcd ? 'visible' : 'hidden';
     if (fcdEl && hasFcd) {
       fcdEl.textContent = '$' + r.feedCostPerDozen.toFixed(4) + ' / doz';
     }
