@@ -185,6 +185,7 @@ The calculator is designed to render without any vertical shift across species t
 
 - **`.stat-box { min-height: 95px }`** — reserves space for a 2-line stat-label so wrapping at narrow widths doesn't grow the row. Also matches the natural height of `.stat-value.large` (used by the dollar-box) so that toggling between dollar-placeholder and dollar-box doesn't shift the row by 4 px.
 - **`.fin-detail { min-height: 32px }`** — reserves 2 lines for the species-specific detail line below the financials. Big dollar values can push turkey/broiler's "Feed consumed" line to wrap; reserved space prevents that wrap from shifting the cred strip.
+- **`.head-to-head { min-height: 32px }`** — reserves 2 lines for the locked-lifts footnote at the bottom of the calc area. Layer's footnote text is slightly longer than turkey/broiler's (the "+12 eggs per hen" clause runs longer than "+X.X% FCR"), which causes layer to wrap to 2 lines on some real-browser font-rendering paths even when turkey/broiler don't. Reserving space here is the controlling fix that locks the cred strip to a single y-position across species.
 - **`.financials { grid-template-columns: auto 1fr }`** — the financial inputs column takes its natural width (constrained by labels + 130 px input), and the outputs column gets all remaining space. Replaces an earlier `1fr 1.15fr` ratio that left outputs too narrow.
 - **`.fin-row .fin-label`** and **`.fin-row .fin-value`** both have `white-space: nowrap` — prevents long dollar values from breaking inside the value span and forcing a 2-line row.
 - **Layer audit trail phantom row** — between "Top-line revenue" and "Feed cost of extra output" there's a `visibility: hidden` `.fin-row` slot. Reserves the y-position where turkey/broiler's "Feed cost saved" line lives, keeping the bottom-line impact row at the same y-coordinate across species. Search `Spacer row` to find it.
@@ -253,6 +254,7 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 | Per-species color tokens | `body[data-species=` |
 | Stat-box height reservation | `.stat-box {` (look for min-height) |
 | Fin-detail height reservation | `.fin-detail {` (look for min-height) |
+| Head-to-head height reservation | `.head-to-head {` (look for min-height) |
 | Layer audit-trail phantom row | `Spacer row` |
 | Layer feed-cost-per-dozen toggle | `l-feedcost-detail` |
 
@@ -270,6 +272,14 @@ Most edits land in one of a few places. Open the HTML in any text editor and sea
 ---
 
 ## Version
+
+**v1.3.1** — May 2026
+
+Changes since v1.3:
+
+- **Head-to-head footnote stability** — added `.head-to-head { min-height: 32px }` to reserve 2-line vertical space for the locked-lifts footnote below the financials. The footnote text differs per species (turkey "+5.5% FCR", broiler "+1.8% FCR", layer "+12 eggs per hen"); on some browsers and font-rendering paths the layer text wraps to 2 lines while turkey/broiler stay on 1, which previously caused a ~15 px shift in the cred-strip y-position when toggling species. With the min-height in place, the element occupies the same vertical space regardless of whether the text wraps. This was a real cross-browser font-rendering issue that headless Chromium (playwright) didn't reproduce; verified fixed against actual Mac Chrome screen capture at 1818 px viewport.
+
+---
 
 **v1.3** — May 2026
 
