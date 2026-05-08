@@ -37,10 +37,11 @@
   /* Top row: presets + inline warnings */
   .presets-row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .presets-row .presets { margin-bottom: 0; flex-shrink: 0; }
-  .warnings-inline { flex: 0 1 50%; max-width: 50%; margin-left: auto; }
+  .warnings-inline { display: flex; flex-direction: row; gap: 6px; flex: 0 1 50%; max-width: 50%; margin-left: auto; flex-wrap: nowrap; min-width: 0; }
   .warnings-inline:empty { display: none; }
-  .warnings-inline .ok, .warnings-inline .warn { margin: 0; }
-  @media (max-width: 720px) { .warnings-inline { flex: 1 1 100%; max-width: 100%; margin-left: 0; } }
+  .warnings-inline > div { flex: 0 1 auto; min-width: 0; padding: 8px 10px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .warnings-inline .ok, .warnings-inline .warn, .warnings-inline .info { margin: 0; }
+  @media (max-width: 720px) { .warnings-inline { flex: 1 1 100%; max-width: 100%; margin-left: 0; flex-wrap: wrap; } }
   /* Output detail subsections (Volumes / Costs) */
   .output-section + .output-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E8E8E8; }
   .output-section > h3 { margin-top: 0; margin-bottom: 6px; }
@@ -98,8 +99,9 @@
   .bn-util.yellow { color: #B07000; }
   .bn-util.red { color: var(--warn); }
   .bn-util.info { color: var(--gray-mid); }
-  .assumptions { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(9, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
-  @media (max-width: 700px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
+  .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
+  @media (max-width: 920px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(11, auto); } }
+  @media (max-width: 600px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
   .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
   .ass-row > span.ass-label { color: var(--text); font-weight: 500; }
   .ass-input { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -114,6 +116,7 @@
   .reset-btn:hover { background: var(--gray-light); border-color: var(--gray-dark); color: var(--text); }
   .reset-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .warn { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--warn); margin-bottom: 8px; }
+  .info { background: var(--yellow-light); border-left: 4px solid #B58200; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #806000; margin-bottom: 8px; }
   .ok { background: #E2F0CB; border-left: 4px solid var(--green-dark); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--gray-dark); }
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 40px; font-size: 13px; }
   .stat-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #eee; }
@@ -137,7 +140,7 @@
       <span class="presets-label">Quick scenarios:</span>
       <button class="preset-btn" data-preset="conservative" type="button">Conservative</button>
       <button class="preset-btn" data-preset="realistic" type="button">Realistic</button>
-      <button class="preset-btn" data-preset="optimal" type="button">Optimal</button>
+      <button class="preset-btn" data-preset="maximum" type="button">Maximum</button>
     </div>
     <div id="warnings" class="warnings-inline"></div>
   </div>
@@ -282,6 +285,8 @@
     glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
     plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
     inoculantFixed: 80000, inoculantPerBird: 0.10,
+    abemBreakingPerHr: 350, externalBreakerPerLb: 0.12,
+    logisticsFarmToBreaker: 1000, logisticsBreakerToPlant: 800,
     breakerEggsPerHr: 48600,
     truckEggCapacity: 360000, tankerLbsCapacity: 48000,
   };
@@ -290,10 +295,6 @@
   // any user-edited input values snap back to baseline before the preset is applied.
   const INPUT_DEFAULTS = {
     eggCostPerDozen: 0.75,
-    abemBreakingPerHr: 350,
-    externalBreakerPerLb: 0.12,
-    logisticsFarmToBreaker: 1000,
-    logisticsBreakerToPlant: 800,
     pricingPerLb: 6.20,
   };
 
@@ -312,6 +313,10 @@
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
     { key: 'inoculantFixed', label: 'Inoculant fixed', unit: '$', step: 5000, min: 0, max: 250000 },
     { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 2.00 },
+    { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 1000 },
+    { key: 'externalBreakerPerLb', label: 'External breaker', unit: '$/lb', step: 0.01, min: 0, max: 0.30 },
+    { key: 'logisticsFarmToBreaker', label: 'Farm pickup', unit: '$/load', step: 50, min: 0, max: 3000 },
+    { key: 'logisticsBreakerToPlant', label: 'Breaker to plant', unit: '$/tanker', step: 50, min: 0, max: 3000 },
     { key: 'breakerEggsPerHr', label: 'Breaker rate', unit: 'eggs/hr', step: 1000, min: 5000, max: 150000 },
     { key: 'truckEggCapacity', label: 'Egg truck capacity', unit: 'eggs', step: 10000, min: 50000, max: 1000000 },
     { key: 'tankerLbsCapacity', label: 'Tanker capacity', unit: 'lbs', step: 1000, min: 10000, max: 100000 },
@@ -325,10 +330,6 @@
 
   const costSliders = [
     { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen', tag: 'estimate' },
-    { key: 'abemBreakingPerHr', label: 'AbEM breaking $/hr', min: 100, max: 1000, step: 25, fmt: 'money', suffix: '/hr', tag: 'assumption', showWhen: () => state.breakLoc === 'abem' },
-    { key: 'externalBreakerPerLb', label: 'External breaker $/lb', min: 0, max: 0.30, step: 0.01, fmt: 'money2', suffix: '/lb', tag: 'estimate', showWhen: () => state.breakLoc === 'external' },
-    { key: 'logisticsFarmToBreaker', label: 'Farm pickup ($/load)', min: 0, max: 3000, step: 50, fmt: 'money', suffix: '/load', tag: 'estimate' },
-    { key: 'logisticsBreakerToPlant', label: 'Breaker to plant ($/tanker)', min: 0, max: 3000, step: 50, fmt: 'money', suffix: '/tanker', tag: 'estimate', showWhen: () => state.breakLoc === 'external' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
     { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%', tag: 'assumption' },
   ];
@@ -386,12 +387,19 @@
       const el = document.getElementById('val-' + def.key);
       if (el) el.textContent = fmt[def.fmt](state[def.key]) + def.suffix;
     });
-    // Flock size color thresholds: <200K = warn (yellow), >250K = danger (red)
+  }
+
+  function updateFlockSizeColor(c) {
     const flockEl = document.getElementById('val-flockSize');
-    if (flockEl) {
-      flockEl.classList.remove('val-warn', 'val-danger');
-      if (state.flockSize > 250000) flockEl.classList.add('val-danger');
-      else if (state.flockSize < 200000) flockEl.classList.add('val-warn');
+    if (!flockEl) return;
+    flockEl.classList.remove('val-warn', 'val-danger');
+    const netProfit = c.totalFinishedProduct * state.pricingPerLb - c.totalCost;
+    const dryerOverloaded = c.dryerUtil > 1.0;
+    const dryerHigh = c.dryerUtil > 0.90;
+    if (netProfit < 0 || dryerOverloaded) {
+      flockEl.classList.add('val-danger');
+    } else if (dryerHigh) {
+      flockEl.classList.add('val-warn');
     }
   }
 
@@ -459,10 +467,16 @@
     let breakingCost = 0;
     let breakingDetail = '';
     if (s.breakLoc === 'abem') {
-      const breakingHrsPerWeek = s.abemShiftHrs * s.abemDaysPerWk;
-      const totalBreakingHrs = breakingHrsPerWeek * s.layWeeks;
+      const baseShiftHrs = s.abemShiftHrs * s.abemDaysPerWk;
+      const hrsNeededPerWk = eggsPerWeek / s.breakerEggsPerHr;
+      const actualHrsPerWk = Math.max(baseShiftHrs, hrsNeededPerWk);
+      const totalBreakingHrs = actualHrsPerWk * s.layWeeks;
       breakingCost = totalBreakingHrs * s.abemBreakingPerHr;
-      breakingDetail = `${totalBreakingHrs} hrs (${s.abemShiftHrs} hr × ${s.abemDaysPerWk} days × ${s.layWeeks} wk) @ $${s.abemBreakingPerHr}/hr`;
+      if (hrsNeededPerWk <= baseShiftHrs) {
+        breakingDetail = `${totalBreakingHrs.toFixed(0)} hrs (${baseShiftHrs} hr × ${s.layWeeks} wk base shift) @ $${s.abemBreakingPerHr}/hr`;
+      } else {
+        breakingDetail = `${totalBreakingHrs.toFixed(0)} hrs (${actualHrsPerWk.toFixed(1)} hr/wk × ${s.layWeeks} wk, base + overflow) @ $${s.abemBreakingPerHr}/hr`;
+      }
     } else {
       breakingCost = totalLiquidLbs * s.externalBreakerPerLb;
       breakingDetail = `${fmt.numKM(totalLiquidLbs)} lbs liquid × $${s.externalBreakerPerLb.toFixed(2)}/lb`;
@@ -561,10 +575,10 @@
   function renderWarnings(c) {
     const warns = [];
     if (c.dryerUtil > 1) {
-      warns.push({ type: 'warn', msg: `Dryer overloaded: ${(c.dryerUtil*100).toFixed(0)}% of cap. Drying must run concurrent with laying and cannot pause once started, so reduce flock size or extend lay weeks.` });
+      warns.push({ type: 'warn', msg: `Dryer overloaded at ${(c.dryerUtil*100).toFixed(0)}%.` });
     }
     if (state.breakLoc === 'abem' && !c.breakerOK) {
-      warns.push({ type: 'warn', msg: `Breaker hours (${c.breakerHrsNeeded.toFixed(1)}/wk) exceed available shift coverage.` });
+      warns.push({ type: 'info', msg: 'Breaking >40 hr/wk, shift premium applied.' });
     }
     if (warns.length === 0) {
       warns.push({ type: 'ok', msg: 'All constraints satisfied. No capacity overloads.' });
@@ -617,7 +631,7 @@
       <div class="stat-row"><span>Plant operating weeks</span><strong>${c.plantWeeks} wk</strong></div>
       <div class="stat-row"><span>Dryer utilization (vs ${fmt.numKM(c.dryerLiquidCapacity)} lbs/wk)</span><strong>${(c.dryerUtil*100).toFixed(0)}%</strong></div>
       <div class="stat-row"><span>Encapsulation utilization (vs ${fmt.numKM(c.glattCapacityPerWeek)}/wk)</span><strong>${(c.glattUtil*100).toFixed(0)}%</strong></div>
-      ${state.breakLoc === 'abem' ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}</strong></div>` : ''}
+      ${state.breakLoc === 'abem' ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}${c.breakerHrsNeeded > (state.abemShiftHrs * state.abemDaysPerWk) ? ' <span style="color:#806000;font-weight:500;font-size:11px;">premium applied</span>' : ''}</strong></div>` : ''}
     `;
     document.getElementById('throughput-display').innerHTML = html;
   }
@@ -688,7 +702,7 @@
 
     // Stage 3: Glatt drying mode (runs during the laying phase)
     stages.push({
-      label: 'Glatt drying',
+      label: `Glatt drying (${c.dryingWeeks} wk phase)`,
       need: `${fmt.numKM(c.liquidLbsPerWeek)} lbs liquid`,
       cap: `${fmt.numKM(c.dryerLiquidCapacity)} lbs liquid`,
       util: c.dryerUtil,
@@ -814,6 +828,7 @@
     renderVolumeDetail(c);
     renderOutputDetail(c);
     renderBottleneck(c);
+    updateFlockSizeColor(c);
   }
 
   buildSliders(flockSliders, 'flock-sliders');
@@ -827,14 +842,14 @@
   // pricing) stay where the user left them so price/input sensitivity still applies.
   const presets = {
     conservative: {
-      flockSize: 100000, breakLoc: 'abem', dryerSchedule: '24-5',
+      flockSize: 170000, breakLoc: 'abem', dryerSchedule: '24-5',
       eggType: 'whole', htSplitPct: 60,
     },
     realistic: {
       flockSize: 200000, breakLoc: 'abem', dryerSchedule: '24-5',
       eggType: 'whole', htSplitPct: 70,
     },
-    optimal: {
+    maximum: {
       flockSize: 286000, breakLoc: 'abem', dryerSchedule: '24-6',
       eggType: 'whole', htSplitPct: 80,
     },
