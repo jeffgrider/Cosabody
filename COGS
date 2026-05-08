@@ -1,0 +1,874 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosabody Production COGS Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #10A040;
+    --green-light: #75C147;
+    --green-bg: #E8F5E9;
+    --blue-deep: #3F8FB5;
+    --blue-light: #70C0E0;
+    --yellow: #F0D030;
+    --yellow-light: #FFF3B8;
+    --gray-dark: #5A5A5A;
+    --gray-mid: #B0B0B0;
+    --gray-light: #F2F2F2;
+    --text: #1A1A1A;
+    --warn: #C00000;
+    --warn-bg: #FCE4D6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif; color: var(--text); background: #FAFAFA; padding: 20px; line-height: 1.45; }
+  h1 { color: var(--green-dark); font-size: 26px; margin-bottom: 4px; }
+  h2 { color: var(--green-dark); font-size: 18px; margin: 24px 0 10px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); }
+  h3 { font-size: 14px; color: var(--gray-dark); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 6px 0; }
+  .subtitle { color: var(--gray-dark); font-size: 14px; margin-bottom: 20px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+  /* Top row: presets + inline warnings */
+  .presets-row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .presets-row .presets { margin-bottom: 0; flex-shrink: 0; }
+  .warnings-inline { flex: 0 1 50%; max-width: 50%; margin-left: auto; }
+  .warnings-inline:empty { display: none; }
+  .warnings-inline .ok, .warnings-inline .warn { margin: 0; }
+  @media (max-width: 720px) { .warnings-inline { flex: 1 1 100%; max-width: 100%; margin-left: 0; } }
+  /* Output detail subsections (Volumes / Costs) */
+  .output-section + .output-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E8E8E8; }
+  .output-section > h3 { margin-top: 0; margin-bottom: 6px; }
+  /* Single-column stat lists */
+  #volume-detail, #output-detail, #throughput-display { font-size: 13px; }
+  .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .toggle-group { display: inline-flex; padding: 2px; background: var(--gray-light); border-radius: 14px; gap: 0; align-items: center; }
+  .toggle { padding: 4px 12px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-weight: 500; color: var(--gray-dark); border-radius: 12px; transition: all 0.15s; user-select: none; line-height: 1.3; white-space: nowrap; }
+  .toggle.active { background: var(--green-dark); color: white; }
+  .toggle:hover:not(.active):not(.disabled) { color: var(--text); }
+  .toggle.disabled { opacity: 0.3; cursor: not-allowed; }
+  /* Inline config rows (label left, slide toggle right) inside Inputs card */
+  .config-inline { display: grid; grid-template-columns: 200px 1fr; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .config-inline > label { color: var(--text); font-weight: 500; }
+  .config-inline > .toggle-group { justify-self: center; }
+  .slider-row { display: grid; grid-template-columns: 200px 1fr 110px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .slider-row label { color: var(--text); font-weight: 500; }
+  .slider-row .value { font-family: 'Roboto Mono', 'SF Mono', Consolas, monospace; font-weight: 700; color: var(--green-dark); text-align: right; font-size: 13px; }
+  .slider-row .value.val-warn { color: #B58200; }
+  .slider-row .value.val-danger { color: var(--warn); }
+  .slider-row input[type=range] { width: 100%; }
+  .headline-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  @media (max-width: 1080px) { .headline-grid-5 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px) { .headline-grid-5 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .headline-grid-5 { grid-template-columns: 1fr; } }
+  .hl-card { padding: 16px; border-radius: 8px; color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: background 0.25s; }
+  .hl-card.neutral { background: linear-gradient(135deg, var(--green-dark), var(--green-light)); }
+  .hl-card.positive { background: linear-gradient(135deg, #0E8A38, #5DAE3F); }
+  .hl-card.negative { background: linear-gradient(135deg, #A52828, #D44545); }
+  .headline-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 6px; }
+  .headline-value { font-size: 24px; font-weight: 700; line-height: 1.1; font-family: 'Roboto Mono', monospace; }
+  .headline-detail { font-size: 11px; opacity: 0.92; margin-top: 4px; line-height: 1.35; }
+  .breakdown-output-row { display: flex; gap: 16px; margin-top: 16px; align-items: stretch; }
+  .breakdown-output-row > .card { flex: 1 1 50%; min-width: 0; margin-top: 0; }
+  @media (max-width: 820px) { .breakdown-output-row { flex-direction: column; } }
+  .bar-chart { display: flex; flex-direction: column; gap: 6px; padding: 8px 0 4px; }
+  .bar-row { display: grid; grid-template-columns: 90px 1fr 90px; gap: 12px; align-items: center; }
+  .bar-label { font-weight: 500; color: var(--text); font-size: 13px; }
+  .bar-track { background: var(--gray-light); height: 36px; border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; min-width: 4px; }
+  .bar-value-stack { text-align: right; font-family: 'Roboto Mono', monospace; line-height: 1.2; }
+  .bar-value-stack .v-main { font-weight: 700; font-size: 14px; display: block; color: var(--text); }
+  .bar-value-stack .v-sub { font-size: 11px; color: var(--gray-dark); display: block; margin-top: 2px; }
+  .output-card .stat-grid { grid-template-columns: 1fr; gap: 0 0; }
+  .bn-row { display: grid; grid-template-columns: 1.5fr 1.1fr 1.1fr 1fr 55px; gap: 14px; align-items: center; padding: 8px 0; font-size: 13px; border-bottom: 1px dashed #eee; }
+  .bn-row:last-child { border-bottom: none; }
+  .bn-header { font-size: 10px; color: var(--gray-dark); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; padding: 0 0 6px 0; border-bottom: 1px solid var(--gray-mid); }
+  .bn-label { font-weight: 500; }
+  .bn-need, .bn-cap { font-family: 'Roboto Mono', monospace; font-size: 12px; }
+  .bn-cap { color: var(--gray-dark); }
+  .bn-bar-bg { background: var(--gray-light); height: 10px; border-radius: 5px; overflow: hidden; }
+  .bn-bar { height: 100%; border-radius: 5px; transition: width 0.25s; }
+  .bn-util { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: 600; }
+  .bn-util.green { color: var(--green-dark); }
+  .bn-util.yellow { color: #B07000; }
+  .bn-util.red { color: var(--warn); }
+  .bn-util.info { color: var(--gray-mid); }
+  .assumptions { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(9, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
+  @media (max-width: 700px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
+  .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
+  .ass-row > span.ass-label { color: var(--text); font-weight: 500; }
+  .ass-input { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .ass-input input { width: 80px; padding: 4px 6px; border: 1px solid var(--gray-mid); border-radius: 3px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right; background: white; color: var(--text); }
+  .ass-input input:focus { outline: 2px solid var(--green-light); outline-offset: -1px; border-color: var(--green-dark); }
+  .ass-input input.invalid { border-color: var(--warn); background: var(--warn-bg); }
+  .ass-input input.modified { background: #FFFCE0; border-color: #D4B500; }
+  .ass-input .ass-unit { font-size: 11px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; min-width: 48px; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 10px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); gap: 12px; }
+  .card-title-row h2 { margin: 0; padding: 0; border-bottom: none; }
+  .reset-btn { padding: 5px 12px; border: 1px solid var(--gray-mid); background: white; color: var(--gray-dark); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; font-family: inherit; transition: all 0.1s; white-space: nowrap; }
+  .reset-btn:hover { background: var(--gray-light); border-color: var(--gray-dark); color: var(--text); }
+  .reset-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .warn { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--warn); margin-bottom: 8px; }
+  .ok { background: #E2F0CB; border-left: 4px solid var(--green-dark); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--gray-dark); }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 40px; font-size: 13px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #eee; }
+  .stat-row strong { font-family: 'Roboto Mono', monospace; }
+  .footnote { font-size: 11px; color: var(--gray-dark); font-style: italic; margin-top: 10px; line-height: 1.5; }
+  .presets { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .presets-label { font-size: 13px; color: var(--gray-dark); font-weight: 500; margin-right: 4px; }
+  .preset-btn { padding: 9px 18px; border: 2px solid var(--green-dark); background: white; color: var(--green-dark); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; user-select: none; font-family: inherit; }
+  .preset-btn:hover { background: var(--green-bg); }
+  .preset-btn.active { background: var(--green-dark); color: white; }
+  .preset-btn.active:hover { background: var(--green-light); border-color: var(--green-light); }
+</style>
+</head>
+<body>
+
+<div class="container" id="root">
+  <h1>Cosabody Production COGS Calculator</h1>
+
+  <div class="presets-row">
+    <div class="presets">
+      <span class="presets-label">Quick scenarios:</span>
+      <button class="preset-btn" data-preset="conservative" type="button">Conservative</button>
+      <button class="preset-btn" data-preset="realistic" type="button">Realistic</button>
+      <button class="preset-btn" data-preset="optimal" type="button">Optimal</button>
+    </div>
+    <div id="warnings" class="warnings-inline"></div>
+  </div>
+
+  <div class="headline-grid-5">
+    <div class="hl-card neutral">
+      <div class="headline-label">Cost per lb</div>
+      <div class="headline-value" id="cost-per-lb">$0.00</div>
+      <div class="headline-detail" id="cost-detail">vs. $6.20 reference</div>
+    </div>
+    <div class="hl-card neutral">
+      <div class="headline-label">Total campaign cost</div>
+      <div class="headline-value" id="total-cost">$0</div>
+      <div class="headline-detail" id="total-detail">Campaign total</div>
+    </div>
+    <div class="hl-card neutral">
+      <div class="headline-label">Total projected revenue</div>
+      <div class="headline-value" id="revenue-value">$0</div>
+      <div class="headline-detail" id="revenue-detail">At reference price</div>
+    </div>
+    <div class="hl-card neutral" id="net-card">
+      <div class="headline-label">Net profit / loss</div>
+      <div class="headline-value" id="net-value">$0</div>
+      <div class="headline-detail" id="net-detail">Revenue minus modeled cost</div>
+    </div>
+    <div class="hl-card neutral" id="margin-card">
+      <div class="headline-label">Margin</div>
+      <div class="headline-value" id="margin-value">0%</div>
+      <div class="headline-detail" id="margin-detail">Of revenue</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top: 16px;">
+    <div class="card">
+      <h2>Inputs</h2>
+      <div class="config-inline">
+        <label>Egg type</label>
+        <div class="toggle-group" id="egg-type-toggle">
+          <div class="toggle active" data-val="whole">Whole</div>
+          <div class="toggle" data-val="yolk">Yolk</div>
+        </div>
+      </div>
+      <div class="config-inline">
+        <label>Break location</label>
+        <div class="toggle-group" id="break-loc-toggle">
+          <div class="toggle active" data-val="external">External</div>
+          <div class="toggle" data-val="abem">AbEM</div>
+        </div>
+      </div>
+      <div class="config-inline">
+        <label>Glatt / Dryer schedule</label>
+        <div class="toggle-group" id="dryer-toggle">
+          <div class="toggle active" data-val="24-5">5 days</div>
+          <div class="toggle" data-val="24-6">6 days</div>
+        </div>
+      </div>
+      <div id="flock-sliders"></div>
+      <div id="cost-sliders"></div>
+    </div>
+    <div class="card">
+      <h2>Plant throughput sanity check</h2>
+      <div id="throughput-display"></div>
+    </div>
+  </div>
+
+  <div class="breakdown-output-row">
+    <div class="card breakdown-card">
+      <h2>Cost breakdown</h2>
+      <div id="breakdown"></div>
+      <div class="footnote" id="footnote"></div>
+    </div>
+
+    <div class="card output-card">
+      <h2>Output detail</h2>
+      <div class="output-section">
+        <h3>Volumes</h3>
+        <div id="volume-detail"></div>
+      </div>
+      <div class="output-section">
+        <h3>Costs</h3>
+        <div id="output-detail"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <h2>Bottleneck analysis</h2>
+    <div id="bottleneck"></div>
+    <div class="footnote">Trucks, breaker, and dryer run concurrent during the 16-wk laying phase. Glatt coating runs after laying ends. Yellow at 80%+, red over 95%. The binding stage caps the system; idle slack at any stage is wasted capital.</div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-title-row">
+      <h2>Editable assumptions</h2>
+      <button class="reset-btn" id="reset-assumptions-btn" type="button">↺ Reset to defaults</button>
+    </div>
+    <div class="assumptions" id="assumptions"></div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    eggType: 'whole',
+    breakLoc: 'external',
+    dryerSchedule: '24-5',
+    flockSize: 200000,
+    layRate: 82,
+    layWeeks: 16,
+    eggMassWhole: 50,
+    eggMassYolk: 17,
+    solidsWhole: 24.5,
+    solidsYolk: 44.5,
+    breakerEggsPerHr: 48600,
+    eggCostPerDozen: 0.75,
+    abemBreakingPerHr: 350,
+    externalBreakerPerLb: 0.12,
+    logisticsFarmToBreaker: 1000,
+    logisticsBreakerToPlant: 800,
+    pricingPerLb: 6.20,
+    htSplitPct: 60,
+    // Editable plant/operational constants (previously hardcoded)
+    htEncapsulationRate: 45,
+    glattWaterRate: 1000,
+    dryerEfficiency: 95,
+    glattEncapPerDay: 10000,
+    plantBaseWeekly: 98000,
+    plantSixthDayPremium: 5000,
+    inoculantFixed: 80000,
+    inoculantPerBird: 0.10,
+    abemShiftHrs: 8,
+    abemDaysPerWk: 5,
+    truckEggCapacity: 360000,
+    tankerLbsCapacity: 48000,
+  };
+
+  // Snapshot of factory defaults for the Reset button (only the editable assumption keys).
+  const ASSUMPTION_DEFAULTS = {
+    layRate: 82, layWeeks: 16,
+    eggMassWhole: 50, eggMassYolk: 17,
+    solidsWhole: 24.5, solidsYolk: 44.5,
+    htEncapsulationRate: 45,
+    glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
+    plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
+    inoculantFixed: 80000, inoculantPerBird: 0.10,
+    breakerEggsPerHr: 48600,
+    truckEggCapacity: 360000, tankerLbsCapacity: 48000,
+  };
+
+  const editableAssumptions = [
+    { key: 'layRate', label: 'Lay rate', unit: '%', step: 1, min: 50, max: 100 },
+    { key: 'layWeeks', label: 'Lay weeks', unit: 'wk', step: 1, min: 8, max: 30 },
+    { key: 'eggMassWhole', label: 'Whole-egg mass', unit: 'g/egg', step: 1, min: 30, max: 70 },
+    { key: 'eggMassYolk', label: 'Yolk mass', unit: 'g/egg', step: 1, min: 10, max: 25 },
+    { key: 'solidsWhole', label: 'Whole-egg solids', unit: '%', step: 0.1, min: 10, max: 50 },
+    { key: 'solidsYolk', label: 'Yolk solids', unit: '%', step: 0.1, min: 20, max: 60 },
+    { key: 'htEncapsulationRate', label: 'HT encapsulation rate', unit: '%', step: 1, min: 20, max: 70 },
+    { key: 'glattWaterRate', label: 'Glatt water removal', unit: 'lbs/hr', step: 50, min: 200, max: 2500 },
+    { key: 'dryerEfficiency', label: 'Dryer efficiency', unit: '%', step: 1, min: 50, max: 100 },
+    { key: 'glattEncapPerDay', label: 'Glatt encap rate', unit: 'lbs/day', step: 500, min: 2000, max: 25000 },
+    { key: 'plantBaseWeekly', label: 'Plant cost (24/5)', unit: '$/wk', step: 1000, min: 30000, max: 250000 },
+    { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
+    { key: 'inoculantFixed', label: 'Inoculant fixed', unit: '$', step: 5000, min: 0, max: 250000 },
+    { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 2.00 },
+    { key: 'breakerEggsPerHr', label: 'Breaker rate', unit: 'eggs/hr', step: 1000, min: 5000, max: 150000 },
+    { key: 'truckEggCapacity', label: 'Egg truck capacity', unit: 'eggs', step: 10000, min: 50000, max: 1000000 },
+    { key: 'tankerLbsCapacity', label: 'Tanker capacity', unit: 'lbs', step: 1000, min: 10000, max: 100000 },
+  ];
+
+  const flockSliders = [
+    { key: 'flockSize', label: 'Flock size', min: 10000, max: 400000, step: 5000, fmt: 'int', suffix: ' birds' },
+  ];
+
+  const plantSliders = [];
+
+  const costSliders = [
+    { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen', tag: 'estimate' },
+    { key: 'abemBreakingPerHr', label: 'AbEM breaking $/hr', min: 100, max: 1000, step: 25, fmt: 'money', suffix: '/hr', tag: 'assumption', showWhen: () => state.breakLoc === 'abem' },
+    { key: 'externalBreakerPerLb', label: 'External breaker $/lb', min: 0, max: 0.30, step: 0.01, fmt: 'money2', suffix: '/lb', tag: 'estimate', showWhen: () => state.breakLoc === 'external' },
+    { key: 'logisticsFarmToBreaker', label: 'Farm pickup ($/load)', min: 0, max: 3000, step: 50, fmt: 'money', suffix: '/load', tag: 'estimate' },
+    { key: 'logisticsBreakerToPlant', label: 'Breaker to plant ($/tanker)', min: 0, max: 3000, step: 50, fmt: 'money', suffix: '/tanker', tag: 'estimate', showWhen: () => state.breakLoc === 'external' },
+    { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
+    { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%', tag: 'assumption' },
+  ];
+
+  const fmt = {
+    int: v => Math.round(v).toLocaleString(),
+    dec: v => Number(v).toFixed(1),
+    money: v => '$' + Math.round(v).toLocaleString(),
+    money2: v => '$' + Number(v).toFixed(2),
+    moneyKM: v => {
+      if (v >= 1000000) return '$' + (v / 1000000).toFixed(2) + 'M';
+      if (v >= 1000) return '$' + Math.round(v / 1000).toLocaleString() + 'K';
+      return '$' + Math.round(v).toLocaleString();
+    },
+    numKM: v => {
+      if (v >= 1000000) return (v / 1000000).toFixed(2) + 'M';
+      if (v >= 1000) return Math.round(v / 1000).toLocaleString() + 'K';
+      return Math.round(v).toLocaleString();
+    },
+  };
+
+  function buildSliders(defs, containerId) {
+    const c = document.getElementById(containerId);
+    c.innerHTML = '';
+    defs.forEach(def => {
+      if (def.showWhen && !def.showWhen()) return;
+      const row = document.createElement('div');
+      row.className = 'slider-row';
+      const label = document.createElement('label');
+      label.innerHTML = def.label;
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = def.min;
+      input.max = def.max;
+      input.step = def.step;
+      input.value = state[def.key];
+      input.addEventListener('input', e => {
+        state[def.key] = parseFloat(e.target.value);
+        clearPresetActive();
+        recompute();
+      });
+      const val = document.createElement('span');
+      val.className = 'value';
+      val.id = 'val-' + def.key;
+      val.textContent = fmt[def.fmt](state[def.key]) + def.suffix;
+      row.appendChild(label);
+      row.appendChild(input);
+      row.appendChild(val);
+      c.appendChild(row);
+    });
+  }
+
+  function updateSliderValues() {
+    [...flockSliders, ...plantSliders, ...costSliders].forEach(def => {
+      const el = document.getElementById('val-' + def.key);
+      if (el) el.textContent = fmt[def.fmt](state[def.key]) + def.suffix;
+    });
+    // Flock size color thresholds: <200K = warn (yellow), >250K = danger (red)
+    const flockEl = document.getElementById('val-flockSize');
+    if (flockEl) {
+      flockEl.classList.remove('val-warn', 'val-danger');
+      if (state.flockSize > 250000) flockEl.classList.add('val-danger');
+      else if (state.flockSize < 200000) flockEl.classList.add('val-warn');
+    }
+  }
+
+  function updateToggleStates() {
+    const yolkToggle = document.querySelector('#egg-type-toggle .toggle[data-val="yolk"]');
+    const externalToggle = document.querySelector('#break-loc-toggle .toggle[data-val="external"]');
+    if (state.breakLoc === 'external') yolkToggle.classList.add('disabled');
+    else yolkToggle.classList.remove('disabled');
+    if (state.eggType === 'yolk') externalToggle.classList.add('disabled');
+    else externalToggle.classList.remove('disabled');
+  }
+
+  function setupToggles(groupId, key) {
+    const group = document.getElementById(groupId);
+    group.addEventListener('click', e => {
+      const t = e.target.closest('.toggle');
+      if (!t || t.classList.contains('disabled')) return;
+      [...group.children].forEach(c => c.classList.remove('active'));
+      t.classList.add('active');
+      state[key] = t.dataset.val;
+      clearPresetActive();
+      buildSliders(flockSliders, 'flock-sliders');
+      buildSliders(costSliders, 'cost-sliders');
+      recompute();
+    });
+  }
+
+  function calculate() {
+    const s = state;
+    const eggsPerDay = s.flockSize * (s.layRate / 100);
+    const eggsPerWeek = eggsPerDay * 7;
+    const totalEggs = eggsPerWeek * s.layWeeks;
+    const eggMass = s.eggType === 'whole' ? s.eggMassWhole : s.eggMassYolk;
+    const solidsPct = s.eggType === 'whole' ? s.solidsWhole : s.solidsYolk;
+    const liquidLbsPerWeek = (eggsPerWeek * eggMass) / 454;
+    const totalLiquidLbs = liquidLbsPerWeek * s.layWeeks;
+    const solidsPerWeek = liquidLbsPerWeek * (solidsPct / 100);
+    const totalCosabody = solidsPerWeek * s.layWeeks;
+    const htBase = totalCosabody * (s.htSplitPct / 100);
+    const cosabodyFrac = 1 - (s.htEncapsulationRate / 100);
+    const htAfterCoating = htBase / cosabodyFrac;
+    const cosabodyRemaining = totalCosabody * (1 - s.htSplitPct / 100);
+    const totalFinishedProduct = htAfterCoating + cosabodyRemaining;
+
+    const dryingWeeks = s.eggType === 'whole' ? s.layWeeks : Math.max(1, s.layWeeks - 1);
+
+    const wholeEqLiquidPerWeek = (eggsPerWeek * s.eggMassWhole) / 454;
+    const wholeEqSolidsPerWeek = wholeEqLiquidPerWeek * (s.solidsWhole / 100);
+    const wholeEqHTAfterCoating = (wholeEqSolidsPerWeek * s.layWeeks * (s.htSplitPct / 100)) / cosabodyFrac;
+
+    // Single Glatt/Dryer machine, single schedule. Encapsulation rate × days/wk.
+    const days = s.dryerSchedule === '24-5' ? 5 : 6;
+    const glattCapacityPerWeek = s.glattEncapPerDay * days;
+    const coatingWeeks = Math.max(1, Math.ceil(wholeEqHTAfterCoating / glattCapacityPerWeek));
+
+    const plantWeeks = dryingWeeks + coatingWeeks;
+    const dayPremium = s.dryerSchedule === '24-6' ? s.plantSixthDayPremium : 0;
+    const weeklyPlantRate = s.plantBaseWeekly + dayPremium;
+    const dryingPhaseCost = dryingWeeks * weeklyPlantRate;
+    const coatingPhaseCost = coatingWeeks * weeklyPlantRate;
+    const plantCost = dryingPhaseCost + coatingPhaseCost;
+    const birdCost = (totalEggs / 12) * s.eggCostPerDozen;
+    const inoculantCost = s.inoculantFixed + s.inoculantPerBird * s.flockSize;
+
+    let breakingCost = 0;
+    let breakingDetail = '';
+    if (s.breakLoc === 'abem') {
+      const breakingHrsPerWeek = s.abemShiftHrs * s.abemDaysPerWk;
+      const totalBreakingHrs = breakingHrsPerWeek * s.layWeeks;
+      breakingCost = totalBreakingHrs * s.abemBreakingPerHr;
+      breakingDetail = `${totalBreakingHrs} hrs (${s.abemShiftHrs} hr × ${s.abemDaysPerWk} days × ${s.layWeeks} wk) @ $${s.abemBreakingPerHr}/hr`;
+    } else {
+      breakingCost = totalLiquidLbs * s.externalBreakerPerLb;
+      breakingDetail = `${fmt.numKM(totalLiquidLbs)} lbs liquid × $${s.externalBreakerPerLb.toFixed(2)}/lb`;
+    }
+
+    const farmTruckloads = Math.ceil(totalEggs / s.truckEggCapacity);
+    const farmLogistics = farmTruckloads * s.logisticsFarmToBreaker;
+    let breakerToPlantLogistics = 0;
+    let tankerCount = 0;
+    if (s.breakLoc === 'external') {
+      tankerCount = Math.ceil(totalLiquidLbs / s.tankerLbsCapacity);
+      breakerToPlantLogistics = tankerCount * s.logisticsBreakerToPlant;
+    }
+    const totalLogistics = farmLogistics + breakerToPlantLogistics;
+    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics;
+    const costPerLb = totalFinishedProduct > 0 ? totalCost / totalFinishedProduct : 0;
+
+    // Dryer cap derived from Glatt water-removal rate, schedule, feed water fraction, and break
+    // location. External breaker rounds down to whole tankers.
+    const dryerHrsPerWeek = 24 * days * (s.dryerEfficiency / 100);
+    const waterCapPerWeek = dryerHrsPerWeek * s.glattWaterRate;
+    const waterFraction = 1 - (solidsPct / 100);
+    let dryerLiquidCapacity = waterCapPerWeek / waterFraction;
+    if (s.breakLoc === 'external') {
+      const wholeTankers = Math.floor(dryerLiquidCapacity / s.tankerLbsCapacity);
+      dryerLiquidCapacity = wholeTankers * s.tankerLbsCapacity;
+    }
+    const dryerUtil = liquidLbsPerWeek / dryerLiquidCapacity;
+    const glattRequired = wholeEqHTAfterCoating / coatingWeeks;
+    const glattUtil = glattRequired / glattCapacityPerWeek;
+    const breakerHrsNeeded = eggsPerWeek / s.breakerEggsPerHr;
+    const abemHrsAvailable = s.abemShiftHrs * s.abemDaysPerWk;
+    const breakerOK = s.breakLoc === 'abem' ? breakerHrsNeeded <= abemHrsAvailable : true;
+
+    return {
+      eggsPerDay, eggsPerWeek, totalEggs,
+      liquidLbsPerWeek, totalLiquidLbs,
+      solidsPerWeek, totalCosabody, htBase, htAfterCoating, cosabodyRemaining, totalFinishedProduct,
+      eggMass, solidsPct, dryingWeeks, coatingWeeks, plantWeeks,
+      birdCost, inoculantCost, plantCost, dryingPhaseCost, coatingPhaseCost,
+      breakingCost, breakingDetail,
+      farmLogistics, breakerToPlantLogistics, totalLogistics,
+      farmTruckloads, tankerCount,
+      totalCost, costPerLb,
+      dryerUtil, dryerLiquidCapacity, glattUtil, glattCapacityPerWeek, breakerHrsNeeded, breakerOK,
+    };
+  }
+
+  function renderHeadline(c) {
+    // Cost per lb
+    document.getElementById('cost-per-lb').textContent = fmt.money2(c.costPerLb);
+    document.getElementById('cost-detail').textContent =
+      `Of finished product, vs. $${state.pricingPerLb.toFixed(2)} reference`;
+
+    // Total campaign cost
+    const totalK = c.totalCost / 1000000;
+    document.getElementById('total-cost').textContent =
+      totalK >= 1 ? '$' + totalK.toFixed(2) + 'M' : '$' + Math.round(c.totalCost / 1000) + 'K';
+    document.getElementById('total-detail').textContent =
+      `${fmt.numKM(c.totalFinishedProduct)} lbs finished (${fmt.numKM(c.htAfterCoating)} HT coated, ${fmt.numKM(c.cosabodyRemaining)} non-HT)`;
+
+    // Net profit / loss
+    const revenue = c.totalFinishedProduct * state.pricingPerLb;
+    const net = revenue - c.totalCost;
+
+    // Total projected revenue
+    const revK = revenue / 1000000;
+    document.getElementById('revenue-value').textContent =
+      revK >= 1 ? '$' + revK.toFixed(2) + 'M' : '$' + Math.round(revenue / 1000) + 'K';
+    document.getElementById('revenue-detail').textContent =
+      `${fmt.numKM(c.totalFinishedProduct)} lbs × $${state.pricingPerLb.toFixed(2)}/lb`;
+
+    const netCard = document.getElementById('net-card');
+    netCard.classList.remove('neutral', 'positive', 'negative');
+    netCard.classList.add(net >= 0 ? 'positive' : 'negative');
+    const netK = Math.abs(net) / 1000000;
+    const netStr = netK >= 1
+      ? '$' + netK.toFixed(2) + 'M'
+      : '$' + Math.round(Math.abs(net) / 1000) + 'K';
+    document.getElementById('net-value').textContent = (net < 0 ? '-' : '') + netStr;
+    document.getElementById('net-detail').textContent =
+      `Revenue $${(revenue / 1000000).toFixed(2)}M minus cost $${(c.totalCost / 1000000).toFixed(2)}M`;
+
+    // Margin %
+    const marginPct = revenue > 0 ? (net / revenue * 100) : 0;
+    const marginCard = document.getElementById('margin-card');
+    marginCard.classList.remove('neutral', 'positive', 'negative');
+    marginCard.classList.add(marginPct >= 0 ? 'positive' : 'negative');
+    document.getElementById('margin-value').textContent =
+      (marginPct >= 0 ? '+' : '') + marginPct.toFixed(1) + '%';
+    const marginPerLb = state.pricingPerLb - c.costPerLb;
+    document.getElementById('margin-detail').textContent =
+      `${marginPerLb >= 0 ? '+' : ''}$${marginPerLb.toFixed(2)}/lb at $${state.pricingPerLb.toFixed(2)} price`;
+  }
+
+  function renderWarnings(c) {
+    const warns = [];
+    if (c.dryerUtil > 1) {
+      warns.push({ type: 'warn', msg: `Dryer overloaded: ${(c.dryerUtil*100).toFixed(0)}% of cap. Drying must run concurrent with laying and cannot pause once started, so reduce flock size or extend lay weeks.` });
+    }
+    if (state.breakLoc === 'abem' && !c.breakerOK) {
+      warns.push({ type: 'warn', msg: `Breaker hours (${c.breakerHrsNeeded.toFixed(1)}/wk) exceed available shift coverage.` });
+    }
+    if (warns.length === 0) {
+      warns.push({ type: 'ok', msg: 'All constraints satisfied. No capacity overloads.' });
+    }
+    document.getElementById('warnings').innerHTML = warns.map(w => `<div class="${w.type}">${w.msg}</div>`).join('');
+  }
+
+  function renderBreakdown(c) {
+    const items = [
+      { label: 'Raw eggs', value: c.birdCost, color: '#75C147' },
+      { label: 'Inoculant', value: c.inoculantCost, color: '#10A040' },
+      { label: 'Plant', value: c.plantCost, color: '#3F8FB5' },
+      { label: state.breakLoc === 'abem' ? 'AbEM breaking' : 'External breaking', value: c.breakingCost, color: '#70C0E0' },
+      { label: 'Logistics', value: c.totalLogistics, color: '#F0D030' },
+    ].sort((a, b) => b.value - a.value);
+
+    const total = c.totalCost || 1;
+    const max = Math.max(...items.map(i => i.value)) || 1;
+    const rowsHtml = items.map(i => {
+      const pct = (i.value / total) * 100;
+      const weekly = i.value / c.plantWeeks;
+      const barWidth = (i.value / max) * 100;
+      return `<div class="bar-row"><div class="bar-label">${i.label}</div><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%; background:${i.color};"></div></div><div class="bar-value-stack"><span class="v-main">${fmt.moneyKM(i.value)}</span><span class="v-sub">${pct.toFixed(1)}%</span></div></div>`;
+    }).join('');
+
+    document.getElementById('breakdown').innerHTML = `<div class="bar-chart">${rowsHtml}</div>`;
+
+    const weekRate = (c.dryingPhaseCost / c.dryingWeeks) / 1000;
+    const dayLabel = state.dryerSchedule.replace('-', '×');
+    const burnPerWk = c.totalCost / c.plantWeeks;
+    let foot = `Plant = ${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${weekRate.toFixed(0)}K/wk (${dayLabel} day, single Glatt/Dryer machine, sequential modes). `;
+    foot += `Inoculant = $80K fixed + $0.10/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
+    foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
+    foot += `Logistics = ${c.farmTruckloads} farm-pickup truckloads`;
+    if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker→plant`;
+    foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks.`;
+    document.getElementById('footnote').textContent = foot;
+  }
+
+  function renderThroughput(c) {
+    const html = `
+      <div class="stat-row"><span>Eggs / day</span><strong>${fmt.numKM(c.eggsPerDay)}</strong></div>
+      <div class="stat-row"><span>Eggs / week</span><strong>${fmt.numKM(c.eggsPerWeek)}</strong></div>
+      <div class="stat-row"><span>Solids % (auto)</span><strong>${c.solidsPct.toFixed(1)}%</strong></div>
+      <div class="stat-row"><span>Liquid / week</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs <span style="color:var(--gray-dark);font-weight:400;font-size:11px;">(${(c.liquidLbsPerWeek/state.tankerLbsCapacity).toFixed(2)} tanker equiv)</span></strong></div>
+      <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.solidsPerWeek)} lbs</strong></div>
+      <div class="stat-row"><span>Drying weeks (output)</span><strong>${c.dryingWeeks} wk</strong></div>
+      <div class="stat-row"><span>HT / week</span><strong>${fmt.numKM(c.htAfterCoating / c.coatingWeeks)} lbs</strong></div>
+      <div class="stat-row"><span>Coating weeks (output)</span><strong>${c.coatingWeeks} wk</strong></div>
+      <div class="stat-row"><span>Plant operating weeks</span><strong>${c.plantWeeks} wk</strong></div>
+      <div class="stat-row"><span>Dryer utilization (vs ${fmt.numKM(c.dryerLiquidCapacity)} lbs/wk)</span><strong>${(c.dryerUtil*100).toFixed(0)}%</strong></div>
+      <div class="stat-row"><span>Encapsulation utilization (vs ${fmt.numKM(c.glattCapacityPerWeek)}/wk)</span><strong>${(c.glattUtil*100).toFixed(0)}%</strong></div>
+      ${state.breakLoc === 'abem' ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}</strong></div>` : ''}
+    `;
+    document.getElementById('throughput-display').innerHTML = html;
+  }
+
+  function renderVolumeDetail(c) {
+    const html = `
+      <div class="stat-row"><span>Total Cosabody base produced</span><strong>${fmt.numKM(c.totalCosabody)} lbs</strong></div>
+      <div class="stat-row"><span>HT after coating (${state.htSplitPct}%)</span><strong>${fmt.numKM(c.htAfterCoating)} lbs</strong></div>
+      <div class="stat-row"><span>Cosabody remaining (${100-state.htSplitPct}%)</span><strong>${fmt.numKM(c.cosabodyRemaining)} lbs</strong></div>
+      <div class="stat-row"><span><strong>Total finished product</strong></span><strong>${fmt.numKM(c.totalFinishedProduct)} lbs</strong></div>
+      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
+      <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)}</strong></div>
+    `;
+    document.getElementById('volume-detail').innerHTML = html;
+  }
+
+  function renderOutputDetail(c) {
+    const truckRow = `<div class="stat-row"><span>Egg trucks (farm pickup)</span><strong>${c.farmTruckloads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.farmLogistics)}</strong></div>`;
+    const tankerRow = state.breakLoc === 'external'
+      ? `<div class="stat-row"><span>Tankers (breaker to plant)</span><strong>${c.tankerCount} × ${fmt.moneyKM(state.logisticsBreakerToPlant)} = ${fmt.moneyKM(c.breakerToPlantLogistics)}</strong></div>`
+      : '';
+    const html = `
+      <div class="stat-row"><span>Total campaign cost</span><strong>${fmt.moneyKM(c.totalCost)}</strong></div>
+      <div class="stat-row"><span>Cost per lb finished</span><strong>$${c.costPerLb.toFixed(2)}</strong></div>
+      <div class="stat-row"><span>Revenue at $${state.pricingPerLb.toFixed(2)}/lb</span><strong>${fmt.moneyKM(c.totalFinishedProduct * state.pricingPerLb)}</strong></div>
+      <div class="stat-row"><span>Net of modeled costs</span><strong>${fmt.moneyKM(c.totalFinishedProduct * state.pricingPerLb - c.totalCost)}</strong></div>
+      <div class="stat-row"><span>Margin per lb</span><strong>$${(state.pricingPerLb - c.costPerLb).toFixed(2)}</strong></div>
+      ${truckRow}
+      ${tankerRow}
+    `;
+    document.getElementById('output-detail').innerHTML = html;
+  }
+
+  function renderBottleneck(c) {
+    const stages = [];
+    const eggsPerWk = c.eggsPerWeek;
+
+    // Stage 1: Egg trucks (farm pickup, full-truck only)
+    const truckCapPer = state.truckEggCapacity;
+    const trucksPerWk = Math.ceil(eggsPerWk / truckCapPer);
+    const truckCap = trucksPerWk * truckCapPer;
+    stages.push({
+      label: `Egg trucks (${trucksPerWk} × ${fmt.numKM(truckCapPer)})`,
+      need: `${fmt.numKM(eggsPerWk)} eggs`,
+      cap: `${fmt.numKM(truckCap)} eggs`,
+      util: eggsPerWk / truckCap,
+    });
+
+    // Stage 2: Breaker
+    if (state.breakLoc === 'abem') {
+      const abemHrs = state.abemShiftHrs * state.abemDaysPerWk;
+      const brkCap = abemHrs * state.breakerEggsPerHr;
+      stages.push({
+        label: `AbEM breaker (${abemHrs} hr/wk)`,
+        need: `${fmt.numKM(eggsPerWk)} eggs`,
+        cap: `${fmt.numKM(brkCap)} eggs`,
+        util: eggsPerWk / brkCap,
+      });
+    } else {
+      stages.push({
+        label: 'External breaker',
+        need: `${fmt.numKM(eggsPerWk)} eggs`,
+        cap: 'shipped out',
+        util: 0,
+        info: true,
+      });
+    }
+
+    // Stage 3: Glatt drying mode (runs during the laying phase)
+    stages.push({
+      label: 'Glatt drying',
+      need: `${fmt.numKM(c.liquidLbsPerWeek)} lbs liquid`,
+      cap: `${fmt.numKM(c.dryerLiquidCapacity)} lbs liquid`,
+      util: c.dryerUtil,
+    });
+
+    // Stage 4: Glatt encapsulation mode (after laying ends, runs c.coatingWeeks)
+    const glattNeedPerWk = c.htAfterCoating / c.coatingWeeks;
+    stages.push({
+      label: `Glatt coating (${c.coatingWeeks} wk phase)`,
+      need: `${fmt.numKM(glattNeedPerWk)} lbs HT`,
+      cap: `${fmt.numKM(c.glattCapacityPerWeek)} lbs HT`,
+      util: c.glattUtil,
+    });
+
+    const headerHtml = `<div class="bn-row bn-header"><div>Stage</div><div>Input / wk</div><div>Capacity / wk</div><div>Load</div><div>Util</div></div>`;
+    const rowsHtml = stages.map(s => {
+      const utilPct = s.util * 100;
+      let cls = 'green';
+      let barColor = 'var(--green-dark)';
+      if (s.info) { cls = 'info'; barColor = 'var(--gray-mid)'; }
+      else if (utilPct > 95) { cls = 'red'; barColor = 'var(--warn)'; }
+      else if (utilPct > 80) { cls = 'yellow'; barColor = '#F0D030'; }
+      const barWidth = s.info ? 0 : Math.min(100, utilPct);
+      const utilStr = s.info ? '—' : `${utilPct.toFixed(0)}%`;
+      return `<div class="bn-row"><div class="bn-label">${s.label}</div><div class="bn-need">${s.need}</div><div class="bn-cap">${s.cap}</div><div class="bn-bar-bg"><div class="bn-bar" style="width:${barWidth}%; background:${barColor};"></div></div><div class="bn-util ${cls}">${utilStr}</div></div>`;
+    }).join('');
+
+    document.getElementById('bottleneck').innerHTML = headerHtml + rowsHtml;
+  }
+
+  function formatAssumptionValue(v) {
+    // Use thousand-separators for integer values >= 1000; leave decimals/small ints alone.
+    if (Number.isInteger(v) && Math.abs(v) >= 1000) {
+      return v.toLocaleString('en-US');
+    }
+    return String(v);
+  }
+
+  function renderAssumptions() {
+    const container = document.getElementById('assumptions');
+    container.innerHTML = '';
+    editableAssumptions.forEach(def => {
+      const row = document.createElement('div');
+      row.className = 'ass-row';
+
+      const label = document.createElement('span');
+      label.className = 'ass-label';
+      label.textContent = def.label;
+
+      const inputWrap = document.createElement('div');
+      inputWrap.className = 'ass-input';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.inputMode = 'decimal';
+      input.value = formatAssumptionValue(state[def.key]);
+      input.dataset.key = def.key;
+      const isModified = ASSUMPTION_DEFAULTS[def.key] !== undefined && state[def.key] !== ASSUMPTION_DEFAULTS[def.key];
+      if (isModified) input.classList.add('modified');
+
+      input.addEventListener('input', e => {
+        const raw = e.target.value.replace(/,/g, '').trim();
+        const v = parseFloat(raw);
+        if (raw === '' || isNaN(v) || v < def.min || v > def.max) {
+          input.classList.add('invalid');
+          return;
+        }
+        input.classList.remove('invalid');
+        state[def.key] = v;
+        clearPresetActive();
+        recompute();
+        const mod = ASSUMPTION_DEFAULTS[def.key] !== undefined && state[def.key] !== ASSUMPTION_DEFAULTS[def.key];
+        input.classList.toggle('modified', mod);
+        updateResetButtonState();
+      });
+      input.addEventListener('blur', e => {
+        if (input.classList.contains('invalid')) {
+          input.classList.remove('invalid');
+        }
+        // Reformat on blur so e.g. "98000" becomes "98,000"
+        input.value = formatAssumptionValue(state[def.key]);
+      });
+      input.addEventListener('focus', e => {
+        // While editing, show the raw value (no commas) for easier numeric editing
+        input.value = String(state[def.key]);
+        input.select();
+      });
+
+      const unit = document.createElement('span');
+      unit.className = 'ass-unit';
+      unit.textContent = def.unit;
+
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(unit);
+      row.appendChild(label);
+      row.appendChild(inputWrap);
+      container.appendChild(row);
+    });
+    updateResetButtonState();
+  }
+
+  function updateResetButtonState() {
+    const btn = document.getElementById('reset-assumptions-btn');
+    if (!btn) return;
+    const anyModified = Object.keys(ASSUMPTION_DEFAULTS).some(k => state[k] !== ASSUMPTION_DEFAULTS[k]);
+    btn.disabled = !anyModified;
+  }
+
+  function resetAssumptions() {
+    Object.assign(state, ASSUMPTION_DEFAULTS);
+    clearPresetActive();
+    renderAssumptions();
+    recompute();
+  }
+
+  function recompute() {
+    updateToggleStates();
+    updateSliderValues();
+    const c = calculate();
+    renderHeadline(c);
+    renderWarnings(c);
+    renderBreakdown(c);
+    renderThroughput(c);
+    renderVolumeDetail(c);
+    renderOutputDetail(c);
+    renderBottleneck(c);
+  }
+
+  buildSliders(flockSliders, 'flock-sliders');
+  buildSliders(costSliders, 'cost-sliders');
+
+  setupToggles('egg-type-toggle', 'eggType');
+  setupToggles('break-loc-toggle', 'breakLoc');
+  setupToggles('dryer-toggle', 'dryerSchedule');
+
+  // Preset scenarios. Each sets the operational levers; cost inputs (egg $/dz, inoculant,
+  // pricing) stay where the user left them so price/input sensitivity still applies.
+  const presets = {
+    conservative: {
+      flockSize: 100000, breakLoc: 'abem', dryerSchedule: '24-5',
+      eggType: 'whole', htSplitPct: 60,
+    },
+    realistic: {
+      flockSize: 200000, breakLoc: 'abem', dryerSchedule: '24-5',
+      eggType: 'whole', htSplitPct: 70,
+    },
+    optimal: {
+      flockSize: 286000, breakLoc: 'abem', dryerSchedule: '24-6',
+      eggType: 'whole', htSplitPct: 80,
+    },
+  };
+
+  function clearPresetActive() {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  function syncTogglesToState() {
+    const map = {
+      'egg-type-toggle': 'eggType',
+      'break-loc-toggle': 'breakLoc',
+      'dryer-toggle': 'dryerSchedule',
+    };
+    Object.entries(map).forEach(([id, key]) => {
+      const group = document.getElementById(id);
+      if (!group) return;
+      [...group.children].forEach(c => {
+        c.classList.toggle('active', c.dataset.val === state[key]);
+      });
+    });
+  }
+
+  function applyPreset(name) {
+    const p = presets[name];
+    if (!p) return;
+    Object.assign(state, p);
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.preset === name);
+    });
+    syncTogglesToState();
+    buildSliders(flockSliders, 'flock-sliders');
+    buildSliders(costSliders, 'cost-sliders');
+    recompute();
+  }
+
+  document.querySelectorAll('.preset-btn[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+  });
+
+  document.getElementById('reset-assumptions-btn').addEventListener('click', resetAssumptions);
+
+  renderAssumptions();
+  applyPreset('realistic');
+</script>
+</body>
+</html>
