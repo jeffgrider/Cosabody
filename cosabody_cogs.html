@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -283,6 +284,17 @@
     inoculantFixed: 80000, inoculantPerBird: 0.10,
     breakerEggsPerHr: 48600,
     truckEggCapacity: 360000, tankerLbsCapacity: 48000,
+  };
+
+  // Defaults for the cost/input sliders. Restored on every Quick scenario click so
+  // any user-edited input values snap back to baseline before the preset is applied.
+  const INPUT_DEFAULTS = {
+    eggCostPerDozen: 0.75,
+    abemBreakingPerHr: 350,
+    externalBreakerPerLb: 0.12,
+    logisticsFarmToBreaker: 1000,
+    logisticsBreakerToPlant: 800,
+    pricingPerLb: 6.20,
   };
 
   const editableAssumptions = [
@@ -850,7 +862,7 @@
   function applyPreset(name) {
     const p = presets[name];
     if (!p) return;
-    Object.assign(state, p);
+    Object.assign(state, INPUT_DEFAULTS, p);
     document.querySelectorAll('.preset-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.preset === name);
     });
