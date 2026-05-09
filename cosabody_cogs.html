@@ -778,12 +778,12 @@
   }
 
   function renderMaterialsDetail(c) {
-    const f = groupFmt([c.totalEggs, c.totalLiquidLbs, c.sugarAdded, c.sodiumSulfateAdded]);
+    const dozens = c.totalEggs / 12;
     const html = `
-      <div class="stat-row"><span>Total eggs over campaign</span><strong>${f(c.totalEggs)}</strong></div>
-      <div class="stat-row"><span>Total liquid product</span><strong>${f(c.totalLiquidLbs)} lbs</strong></div>
-      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${f(c.sugarAdded)} lbs</strong></div>
-      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${f(c.sodiumSulfateAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)} <span class="subtle">(${fmt.numKM(dozens)} dozen)</span></strong></div>
+      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
+      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${fmt.numKM(c.sugarAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
     `;
     document.getElementById('materials-detail').innerHTML = html;
   }
