@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cosabody Production COGS Calculator</title>
+<title>Cosabody COGS Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -27,11 +27,12 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif; color: var(--text); background: #FAFAFA; padding: 20px; line-height: 1.45; }
   h1 { color: var(--green-dark); font-size: 26px; margin-bottom: 4px; }
-  h2 { color: var(--green-dark); font-size: 18px; margin: 24px 0 10px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); }
-  h3 { font-size: 14px; color: var(--gray-dark); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 6px 0; }
+  h2 { color: var(--green-dark); font-size: 18px; margin: 0 0 12px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); }
+  h3 { font-size: 14px; color: var(--gray-dark); text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px 0; }
   .subtitle { color: var(--gray-dark); font-size: 14px; margin-bottom: 20px; }
   .container { max-width: 1100px; margin: 0 auto; }
   .grid { display: grid; gap: 16px; }
+  .grid.stacked { margin-top: 12px; }
   .grid-2 { grid-template-columns: 1fr 1fr; }
   @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
   /* Top row: presets + inline warnings */
@@ -47,7 +48,9 @@
   .output-section > h3 { margin-top: 0; margin-bottom: 6px; }
   /* Single-column stat lists */
   #volume-detail, #materials-detail, #output-detail, #throughput-display { font-size: 13px; }
-  .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card { background: white; border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card + .card, .card.stacked { margin-top: 12px; }
+  .grid > .card, .breakdown-output-row > .card, .breakdown-output-row > .left-col > .card { margin-top: 0; }
   .toggle-group { display: inline-flex; padding: 2px; background: var(--gray-light); border-radius: 14px; gap: 0; align-items: center; }
   .toggle { padding: 4px 12px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-weight: 500; color: var(--gray-dark); border-radius: 12px; transition: all 0.15s; user-select: none; line-height: 1.3; white-space: nowrap; }
   .toggle.active { background: var(--green-dark); color: white; }
@@ -74,9 +77,10 @@
   .headline-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 6px; }
   .headline-value { font-size: 24px; font-weight: 700; line-height: 1.1; font-family: 'Roboto Mono', monospace; }
   .headline-detail { font-size: 11px; opacity: 0.92; margin-top: 4px; line-height: 1.35; }
-  .breakdown-output-row { display: flex; gap: 16px; margin-top: 16px; align-items: stretch; }
-  .breakdown-output-row > .card { flex: 1 1 50%; min-width: 0; margin-top: 0; }
-  @media (max-width: 820px) { .breakdown-output-row { flex-direction: column; } }
+  .breakdown-output-row { display: flex; gap: 12px; margin-top: 12px; align-items: stretch; }
+  .breakdown-output-row > .card, .breakdown-output-row > .left-col { flex: 1 1 50%; min-width: 0; }
+  .breakdown-output-row > .left-col { display: flex; flex-direction: column; gap: 12px; }
+  @media (max-width: 720px) { .breakdown-output-row { flex-direction: column; } }
   .bar-chart { display: flex; flex-direction: column; gap: 6px; padding: 8px 0 4px; }
   .bar-row { display: grid; grid-template-columns: 90px 1fr 90px; gap: 12px; align-items: center; }
   .bar-label { font-weight: 500; color: var(--text); font-size: 13px; }
@@ -85,10 +89,9 @@
   .bar-value-stack { text-align: right; font-family: 'Roboto Mono', monospace; line-height: 1.2; }
   .bar-value-stack .v-main { font-weight: 700; font-size: 14px; display: block; color: var(--text); }
   .bar-value-stack .v-sub { font-size: 11px; color: var(--gray-dark); display: block; margin-top: 2px; }
-  .bar-total { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--gray-mid); margin-top: 4px; padding-top: 8px; }
-  .bar-total .bar-label { font-weight: 700; }
-  .bar-total .total-value { font-family: 'Roboto Mono', monospace; font-weight: 700; font-size: 15px; color: var(--text); white-space: nowrap; }
-  .bar-total .total-value .total-pct { font-size: 12px; color: var(--gray-dark); margin-left: 8px; }
+  .bar-total { display: flex; justify-content: flex-end; align-items: flex-start; gap: 14px; border-top: 2px solid var(--gray-mid); margin-top: 4px; padding-top: 8px; }
+  .bar-total .total-label { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .bar-total .v-main { font-size: 15px; }
   .output-card .stat-grid { grid-template-columns: 1fr; gap: 0 0; }
   .bn-row { display: grid; grid-template-columns: 1.5fr 1.1fr 1.1fr 1fr 55px; gap: 14px; align-items: center; padding: 8px 0; font-size: 13px; border-bottom: 1px dashed #eee; }
   .bn-row:last-child { border-bottom: none; }
@@ -104,8 +107,8 @@
   .bn-util.red { color: var(--warn); }
   .bn-util.info { color: var(--gray-mid); }
   .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(8, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
-  @media (max-width: 920px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(12, auto); } }
-  @media (max-width: 600px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
+  @media (max-width: 1080px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(12, auto); } }
+  @media (max-width: 720px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
   .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
   .ass-row > span.ass-label { color: var(--text); font-weight: 500; }
   .ass-input { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
@@ -114,20 +117,24 @@
   .ass-input input.invalid { border-color: var(--warn); background: var(--warn-bg); }
   .ass-input input.modified { background: #FFFCE0; border-color: #D4B500; }
   .ass-input .ass-unit { font-size: 11px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; min-width: 48px; }
-  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 10px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); gap: 12px; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin: 0 0 12px 0; padding-bottom: 4px; border-bottom: 2px solid var(--green-dark); gap: 12px; }
   .card-title-row h2 { margin: 0; padding: 0; border-bottom: none; }
   .reset-btn { padding: 5px 12px; border: 1px solid var(--gray-mid); background: white; color: var(--gray-dark); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; font-family: inherit; transition: all 0.1s; white-space: nowrap; }
   .reset-btn:hover { background: var(--gray-light); border-color: var(--gray-dark); color: var(--text); }
   .reset-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .warn { background: var(--warn-bg); border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--warn); margin-bottom: 8px; }
-  .info { background: var(--yellow-light); border-left: 4px solid #B58200; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #806000; margin-bottom: 8px; }
+  .warnings-inline .info { background: var(--yellow-light); border-left: 4px solid #B58200; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #806000; margin-bottom: 8px; }
   .ok { background: #E2F0CB; border-left: 4px solid var(--green-dark); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--gray-dark); }
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 40px; font-size: 13px; }
   .stat-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #eee; }
   .stat-row strong { font-family: 'Roboto Mono', monospace; }
-  .footnote { font-size: 11px; color: var(--gray-dark); font-style: italic; margin-top: 10px; line-height: 1.5; }
-  .phase-section { margin-top: 8px; }
-  .phase-section h2 { margin-top: 8px; }
+  /* Inline subtle context tags within stat values, formula hints, etc. */
+  .subtle { color: var(--gray-dark); font-weight: 400; font-size: 11px; }
+  .premium-tag { color: #806000; font-weight: 500; font-size: 11px; }
+  .na-value { color: var(--gray-dark); font-weight: 500; }
+  .profit-val { color: var(--green-dark); }
+  .loss-val { color: var(--warn); }
+  .footnote { font-size: 11px; color: var(--gray-dark); font-style: italic; margin-top: 8px; line-height: 1.5; }
   .phase-timeline { display: flex; height: 64px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
   .phase-segment { display: flex; flex-direction: column; justify-content: center; padding: 6px 12px; min-width: 0; overflow: hidden; }
   .phase-drying { background: #DCEAD0; color: #3A5722; }
@@ -135,7 +142,7 @@
   .phase-name { font-weight: 700; font-size: 13px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .phase-total { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px; line-height: 1.2; }
   .phase-meta { font-size: 10px; opacity: 0.75; margin-top: 1px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .phase-axis { display: flex; font-size: 10px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; margin-top: 4px; }
+  .phase-axis { display: flex; font-size: 12px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; margin-top: 6px; }
   .phase-axis > span { padding: 0 2px; }
   .phase-axis .ax-end { margin-left: auto; }
   .presets { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
@@ -149,7 +156,7 @@
 <body>
 
 <div class="container" id="root">
-  <h1>Cosabody Production COGS Calculator</h1>
+  <h1>Cosabody COGS Calculator</h1>
 
   <div class="presets-row">
     <div class="presets">
@@ -189,7 +196,7 @@
     </div>
   </div>
 
-  <div class="grid grid-2" style="margin-top: 16px;">
+  <div class="grid grid-2 stacked">
     <div class="card">
       <h2>Inputs</h2>
       <div class="config-inline">
@@ -223,11 +230,13 @@
   </div>
 
   <div class="breakdown-output-row">
-    <div class="card breakdown-card">
-      <h2>Cost breakdown</h2>
-      <div id="breakdown"></div>
-      <div class="footnote" id="footnote"></div>
-      <div class="phase-section">
+    <div class="left-col">
+      <div class="card breakdown-card">
+        <h2>Cost breakdown</h2>
+        <div id="breakdown"></div>
+        <div class="footnote" id="footnote"></div>
+      </div>
+      <div class="card stacked">
         <h2>Phase timing</h2>
         <div id="phase-timeline"></div>
       </div>
@@ -250,13 +259,13 @@
     </div>
   </div>
 
-  <div class="card" style="margin-top: 16px;">
+  <div class="card stacked">
     <h2>Bottleneck analysis</h2>
     <div id="bottleneck"></div>
-    <div class="footnote">Trucks, breaker, and dryer run concurrent during the 16-wk laying phase. Glatt coating runs after laying ends. Yellow at 80%+, red over 95%. The binding stage caps the system; idle slack at any stage is wasted capital.</div>
+    <div class="footnote">Trucks, breaker, and dryer run concurrent during the laying phase. Glatt coating runs after laying ends. Yellow at 80%+, red over 95%. The binding stage caps the system; idle slack at any stage is wasted capital.</div>
   </div>
 
-  <div class="card" style="margin-top: 16px;">
+  <div class="card stacked">
     <div class="card-title-row">
       <h2>Editable assumptions</h2>
       <button class="reset-btn" id="reset-assumptions-btn" type="button">↺ Reset to defaults</button>
@@ -360,10 +369,10 @@
   const plantSliders = [];
 
   const costSliders = [
-    { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen', tag: 'estimate' },
+    { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen' },
     { key: 'sugarPctDilution', label: 'Sugar dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
-    { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%', tag: 'assumption' },
+    { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%' },
   ];
 
   const fmt = {
@@ -425,10 +434,9 @@
     const flockEl = document.getElementById('val-flockSize');
     if (!flockEl) return;
     flockEl.classList.remove('val-warn', 'val-danger');
-    const netProfit = c.totalFinishedProduct * state.pricingPerLb - c.totalCost;
     const dryerOverloaded = c.dryerUtil > 1.0;
     const dryerHigh = c.dryerUtil > 0.90;
-    if (netProfit < 0 || dryerOverloaded) {
+    if (c.netPL < 0 || dryerOverloaded) {
       flockEl.classList.add('val-danger');
     } else if (dryerHigh) {
       flockEl.classList.add('val-warn');
@@ -464,6 +472,7 @@
     const eggsPerDay = s.flockSize * (s.layRate / 100);
     const eggsPerWeek = eggsPerDay * 7;
     const totalEggs = eggsPerWeek * s.layWeeks;
+    const abemHrsAvailable = s.abemShiftHrs * s.abemDaysPerWk;
     const eggMass = s.eggType === 'whole' ? s.eggMassWhole : s.eggMassYolk;
     const solidsPct = s.eggType === 'whole' ? s.solidsWhole : s.solidsYolk;
     const liquidLbsPerWeek = (eggsPerWeek * eggMass) / 454;
@@ -506,11 +515,20 @@
     const glattCapacityPerWeek = s.glattEncapPerDay * days;
     const coatingWeeks = Math.max(1, Math.ceil(wholeEqHTAfterCoating / glattCapacityPerWeek));
 
+    // Per-phase 6th-day premium: drying pays the premium only when 5-day capacity is
+    // insufficient (objective need); coating pays whenever 24/6 is selected (the user's
+    // explicit choice for faster coating).
+    const is24_6 = s.dryerSchedule === '24-6';
+    const waterFraction = 1 - (solidsPct / 100);
+    const dryerHrsPerWeek5 = 24 * 5 * (s.dryerEfficiency / 100);
+    const dryerLiquidCapacityAt5 = (dryerHrsPerWeek5 * s.glattWaterRate) / waterFraction;
+    const dryingNeeds6thDay = liquidLbsPerWeek > dryerLiquidCapacityAt5;
+    const dryingWeeklyRate = s.plantBaseWeekly + (is24_6 && dryingNeeds6thDay ? s.plantSixthDayPremium : 0);
+    const coatingWeeklyRate = s.plantBaseWeekly + (is24_6 ? s.plantSixthDayPremium : 0);
+
     const plantWeeks = dryingWeeks + coatingWeeks;
-    const dayPremium = s.dryerSchedule === '24-6' ? s.plantSixthDayPremium : 0;
-    const weeklyPlantRate = s.plantBaseWeekly + dayPremium;
-    const dryingPhaseCost = dryingWeeks * weeklyPlantRate;
-    const coatingPhaseCost = coatingWeeks * weeklyPlantRate;
+    const dryingPhaseCost = dryingWeeks * dryingWeeklyRate;
+    const coatingPhaseCost = coatingWeeks * coatingWeeklyRate;
     const plantCost = dryingPhaseCost + coatingPhaseCost;
     const birdCost = (totalEggs / 12) * s.eggCostPerDozen;
     const inoculantCost = s.inoculantFixed + s.inoculantPerBird * s.flockSize;
@@ -518,13 +536,12 @@
     let breakingCost = 0;
     let breakingDetail = '';
     if (s.breakLoc === 'abem') {
-      const baseShiftHrs = s.abemShiftHrs * s.abemDaysPerWk;
       const hrsNeededPerWk = eggsPerWeek / s.breakerEggsPerHr;
-      const actualHrsPerWk = Math.max(baseShiftHrs, hrsNeededPerWk);
+      const actualHrsPerWk = Math.max(abemHrsAvailable, hrsNeededPerWk);
       const totalBreakingHrs = actualHrsPerWk * s.layWeeks;
       breakingCost = totalBreakingHrs * s.abemBreakingPerHr;
-      if (hrsNeededPerWk <= baseShiftHrs) {
-        breakingDetail = `${totalBreakingHrs.toFixed(0)} hrs (${baseShiftHrs} hr × ${s.layWeeks} wk base shift) @ $${s.abemBreakingPerHr}/hr`;
+      if (hrsNeededPerWk <= abemHrsAvailable) {
+        breakingDetail = `${totalBreakingHrs.toFixed(0)} hrs (${abemHrsAvailable} hr × ${s.layWeeks} wk base shift) @ $${s.abemBreakingPerHr}/hr`;
       } else {
         breakingDetail = `${totalBreakingHrs.toFixed(0)} hrs (${actualHrsPerWk.toFixed(1)} hr/wk × ${s.layWeeks} wk, base + overflow) @ $${s.abemBreakingPerHr}/hr`;
       }
@@ -554,7 +571,6 @@
     // location. External breaker rounds down to whole tankers.
     const dryerHrsPerWeek = 24 * days * (s.dryerEfficiency / 100);
     const waterCapPerWeek = dryerHrsPerWeek * s.glattWaterRate;
-    const waterFraction = 1 - (solidsPct / 100);
     let dryerLiquidCapacity = waterCapPerWeek / waterFraction;
     if (s.breakLoc === 'external') {
       const wholeTankers = Math.floor(dryerLiquidCapacity / s.tankerLbsCapacity);
@@ -564,8 +580,10 @@
     const glattRequired = wholeEqHTAfterCoating / coatingWeeks;
     const glattUtil = glattRequired / glattCapacityPerWeek;
     const breakerHrsNeeded = eggsPerWeek / s.breakerEggsPerHr;
-    const abemHrsAvailable = s.abemShiftHrs * s.abemDaysPerWk;
     const breakerOK = s.breakLoc === 'abem' ? breakerHrsNeeded <= abemHrsAvailable : true;
+
+    const revenue = totalFinishedProduct * s.pricingPerLb;
+    const netPL = revenue - totalCost;
 
     return {
       eggsPerDay, eggsPerWeek, totalEggs,
@@ -580,8 +598,9 @@
       breakingCost, breakingDetail,
       farmLogistics, breakerToPlantLogistics, totalLogistics,
       farmTruckloads, tankerCount,
-      totalCost, costPerLb,
-      dryerUtil, dryerLiquidCapacity, glattUtil, glattCapacityPerWeek, breakerHrsNeeded, breakerOK,
+      totalCost, costPerLb, revenue, netPL,
+      dryerUtil, dryerLiquidCapacity, glattUtil, glattCapacityPerWeek,
+      breakerHrsNeeded, abemHrsAvailable, breakerOK,
     };
   }
 
@@ -598,30 +617,27 @@
     document.getElementById('total-detail').textContent =
       `${fmt.numKM(c.totalFinishedProduct)} lbs finished (${fmt.numKM(c.htAfterCoating)} HT coated, ${fmt.numKM(c.cosabodyRemaining)} non-HT)`;
 
-    // Net profit / loss
-    const revenue = c.totalFinishedProduct * state.pricingPerLb;
-    const net = revenue - c.totalCost;
-
     // Total projected revenue
-    const revK = revenue / 1000000;
+    const revK = c.revenue / 1000000;
     document.getElementById('revenue-value').textContent =
-      revK >= 1 ? '$' + revK.toFixed(2) + 'M' : '$' + Math.round(revenue / 1000) + 'K';
+      revK >= 1 ? '$' + revK.toFixed(2) + 'M' : '$' + Math.round(c.revenue / 1000) + 'K';
     document.getElementById('revenue-detail').textContent =
       `${fmt.numKM(c.totalFinishedProduct)} lbs × $${state.pricingPerLb.toFixed(2)}/lb`;
 
+    // Net profit / loss
     const netCard = document.getElementById('net-card');
     netCard.classList.remove('neutral', 'positive', 'negative');
-    netCard.classList.add(net >= 0 ? 'positive' : 'negative');
-    const netK = Math.abs(net) / 1000000;
+    netCard.classList.add(c.netPL >= 0 ? 'positive' : 'negative');
+    const netK = Math.abs(c.netPL) / 1000000;
     const netStr = netK >= 1
       ? '$' + netK.toFixed(2) + 'M'
-      : '$' + Math.round(Math.abs(net) / 1000) + 'K';
-    document.getElementById('net-value').textContent = (net < 0 ? '-' : '') + netStr;
+      : '$' + Math.round(Math.abs(c.netPL) / 1000) + 'K';
+    document.getElementById('net-value').textContent = (c.netPL < 0 ? '-' : '') + netStr;
     document.getElementById('net-detail').textContent =
-      `Revenue $${(revenue / 1000000).toFixed(2)}M minus cost $${(c.totalCost / 1000000).toFixed(2)}M`;
+      `Revenue $${(c.revenue / 1000000).toFixed(2)}M minus cost $${(c.totalCost / 1000000).toFixed(2)}M`;
 
     // Margin %
-    const marginPct = revenue > 0 ? (net / revenue * 100) : 0;
+    const marginPct = c.revenue > 0 ? (c.netPL / c.revenue * 100) : 0;
     const marginCard = document.getElementById('margin-card');
     marginCard.classList.remove('neutral', 'positive', 'negative');
     marginCard.classList.add(marginPct >= 0 ? 'positive' : 'negative');
@@ -634,15 +650,14 @@
 
   function renderWarnings(c) {
     const warns = [];
-    const netProfit = c.totalFinishedProduct * state.pricingPerLb - c.totalCost;
-    if (netProfit < 0) {
+    if (c.netPL < 0) {
       warns.push({ type: 'warn', msg: 'Operating at a loss.' });
     }
     if (c.dryerUtil > 1) {
       warns.push({ type: 'warn', msg: `Dryer overloaded at ${(c.dryerUtil*100).toFixed(0)}%.` });
     }
     if (state.breakLoc === 'abem' && !c.breakerOK) {
-      warns.push({ type: 'info', msg: 'Breaking >40 hr/wk, shift premium applied.' });
+      warns.push({ type: 'info', msg: `Breaking >${c.abemHrsAvailable} hr/wk, shift premium applied.` });
     }
     if (warns.length === 0) {
       warns.push({ type: 'ok', msg: 'All constraints satisfied. No capacity overloads.' });
@@ -670,22 +685,25 @@
       return `<div class="bar-row"><div class="bar-label">${i.label}</div><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%; background:${i.color};"></div></div><div class="bar-value-stack"><span class="v-main">${fmt.moneyKM(i.value)}</span><span class="v-sub">${pct.toFixed(1)}%</span></div></div>`;
     }).join('');
 
-    const totalRowHtml = `<div class="bar-row bar-total"><div class="bar-label"><strong>Total Campaign Cost</strong></div><div class="total-value">${fmt.moneyKM(c.totalCost)}<span class="total-pct">100%</span></div></div>`;
+    const totalRowHtml = `<div class="bar-row bar-total"><span class="total-label">Total Campaign Cost</span><div class="bar-value-stack"><span class="v-main">${fmt.moneyKM(c.totalCost)}</span><span class="v-sub">100%</span></div></div>`;
 
     document.getElementById('breakdown').innerHTML = `<div class="bar-chart">${rowsHtml}${totalRowHtml}</div>`;
 
-    const weekRate = (c.dryingPhaseCost / c.dryingWeeks) / 1000;
-    const dayLabel = state.dryerSchedule.replace('-', '×');
+    const dryRate = (c.dryingPhaseCost / c.dryingWeeks) / 1000;
+    const coatRate = (c.coatingPhaseCost / c.coatingWeeks) / 1000;
     const burnPerWk = c.totalCost / c.plantWeeks;
-    let foot = `Plant = ${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${weekRate.toFixed(0)}K/wk (${dayLabel} day, single Glatt/Dryer machine, sequential modes). `;
-    foot += `Inoculant = $80K fixed + $0.10/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
+    const plantStr = Math.round(dryRate) === Math.round(coatRate)
+      ? `${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${dryRate.toFixed(0)}K/wk`
+      : `${c.dryingWeeks} drying wk @ $${dryRate.toFixed(0)}K/wk + ${c.coatingWeeks} coating wk @ $${coatRate.toFixed(0)}K/wk`;
+    let foot = `Plant = ${plantStr} (single Glatt/Dryer machine, sequential modes). `;
+    foot += `Inoculant = ${fmt.moneyKM(state.inoculantFixed)} fixed + $${state.inoculantPerBird.toFixed(2)}/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
     foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
     const rawParts = [];
     if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
     if (c.sugarCost > 0) rawParts.push(`sugar ${fmt.numKM(c.sugarAdded)} lbs × $${state.sugarCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sugarCost)}`);
     if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
     foot += `Logistics = ${c.farmTruckloads} farm-pickup truckloads`;
-    if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker→plant`;
+    if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker to plant`;
     foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks.`;
     document.getElementById('footnote').textContent = foot;
   }
@@ -720,42 +738,53 @@
       <div class="stat-row"><span>Eggs / day</span><strong>${fmt.numKM(c.eggsPerDay)}</strong></div>
       <div class="stat-row"><span>Eggs / week</span><strong>${fmt.numKM(c.eggsPerWeek)}</strong></div>
       <div class="stat-row"><span>Solids % (auto)</span><strong>${c.solidsPct.toFixed(1)}%</strong></div>
-      <div class="stat-row"><span>Liquid / week</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs <span style="color:var(--gray-dark);font-weight:400;font-size:11px;">(${(c.liquidLbsPerWeek/state.tankerLbsCapacity).toFixed(2)} tanker equiv)</span></strong></div>
+      <div class="stat-row"><span>Liquid / week</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs <span class="subtle">(${(c.liquidLbsPerWeek/state.tankerLbsCapacity).toFixed(2)} tanker equiv)</span></strong></div>
       <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.dilutedSolidsPerWeek)} lbs</strong></div>
-      <div class="stat-row"><span>Drying weeks (output)</span><strong>${c.dryingWeeks} wk</strong></div>
-      <div class="stat-row"><span>Coating weeks (output)</span><strong>${c.coatingWeeks} wk</strong></div>
+      <div class="stat-row"><span>Drying weeks</span><strong>${c.dryingWeeks} wk</strong></div>
+      <div class="stat-row"><span>Coating weeks</span><strong>${c.coatingWeeks} wk</strong></div>
       <div class="stat-row"><span>Plant operating weeks</span><strong>${c.plantWeeks} wk</strong></div>
       <div class="stat-row"><span>Dryer utilization (vs ${fmt.numKM(c.dryerLiquidCapacity)} lbs/wk)</span><strong>${(c.dryerUtil*100).toFixed(0)}%</strong></div>
       <div class="stat-row"><span>Encapsulation utilization (vs ${fmt.numKM(c.glattCapacityPerWeek)}/wk)</span><strong>${(c.glattUtil*100).toFixed(0)}%</strong></div>
       ${state.breakLoc === 'abem'
-        ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}${c.breakerHrsNeeded > (state.abemShiftHrs * state.abemDaysPerWk) ? ' <span style="color:#806000;font-weight:500;font-size:11px;">premium applied</span>' : ''}</strong></div>`
-        : `<div class="stat-row"><span>Breaker hrs / week</span><strong style="color:var(--gray-dark);font-weight:500;">N/A (external)</strong></div>`}
+        ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}${c.breakerHrsNeeded > c.abemHrsAvailable ? ' <span class="premium-tag">premium applied</span>' : ''}</strong></div>`
+        : `<div class="stat-row"><span>Breaker hrs / week</span><strong class="na-value">N/A (external)</strong></div>`}
     `;
     document.getElementById('throughput-display').innerHTML = html;
   }
 
+  // Format a related group of values consistently. If any value in the group hits 1M+,
+  // render every value in M (2 decimals) so visual sums add up despite rounding tolerance.
+  function groupFmt(values) {
+    const max = Math.max(...values.map(Math.abs));
+    return max >= 1000000
+      ? (v) => (v / 1000000).toFixed(2) + 'M'
+      : (v) => fmt.numKM(v);
+  }
+
   function renderVolumeDetail(c) {
+    const f = groupFmt([c.dilutedCosabody, c.htAfterCoating, c.cosabodyRemaining, c.totalFinishedProduct]);
     const html = `
-      <div class="stat-row"><span>Total Cosabody base produced</span><strong>${fmt.numKM(c.dilutedCosabody)} lbs</strong></div>
-      <div class="stat-row"><span>HT after coating (${state.htSplitPct}%)</span><strong>${fmt.numKM(c.htAfterCoating)} lbs</strong></div>
-      <div class="stat-row"><span>Cosabody remaining (${100-state.htSplitPct}%)</span><strong>${fmt.numKM(c.cosabodyRemaining)} lbs</strong></div>
-      <div class="stat-row"><span><strong>Total finished product</strong></span><strong>${fmt.numKM(c.totalFinishedProduct)} lbs</strong></div>
+      <div class="stat-row"><span>Total Cosabody base produced</span><strong>${f(c.dilutedCosabody)} lbs</strong></div>
+      <div class="stat-row"><span>HT after coating (${state.htSplitPct}%)</span><strong>${f(c.htAfterCoating)} lbs</strong></div>
+      <div class="stat-row"><span>Cosabody remaining (${100-state.htSplitPct}%)</span><strong>${f(c.cosabodyRemaining)} lbs</strong></div>
+      <div class="stat-row"><span><strong>Total finished product</strong></span><strong>${f(c.totalFinishedProduct)} lbs</strong></div>
     `;
     document.getElementById('volume-detail').innerHTML = html;
   }
 
   function renderMaterialsDetail(c) {
+    const f = groupFmt([c.totalEggs, c.totalLiquidLbs, c.sugarAdded, c.sodiumSulfateAdded]);
     const html = `
-      <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)}</strong></div>
-      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
-      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${fmt.numKM(c.sugarAdded)} lbs</strong></div>
-      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Total eggs over campaign</span><strong>${f(c.totalEggs)}</strong></div>
+      <div class="stat-row"><span>Total liquid product</span><strong>${f(c.totalLiquidLbs)} lbs</strong></div>
+      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${f(c.sugarAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${f(c.sodiumSulfateAdded)} lbs</strong></div>
     `;
     document.getElementById('materials-detail').innerHTML = html;
   }
 
   function renderOutputDetail(c) {
-    const truckRow = `<div class="stat-row"><span>Egg trucks (farm pickup)</span><strong>${c.farmTruckloads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.farmLogistics)}</strong></div>`;
+    const truckRow = `<div class="stat-row"><span>Egg trucks</span><strong>${c.farmTruckloads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.farmLogistics)}</strong></div>`;
     const tankerRow = state.breakLoc === 'external'
       ? `<div class="stat-row"><span>Tankers (breaker to plant)</span><strong>${c.tankerCount} × ${fmt.moneyKM(state.logisticsBreakerToPlant)} = ${fmt.moneyKM(c.breakerToPlantLogistics)}</strong></div>`
       : '';
@@ -764,8 +793,8 @@
     const html = `
       <div class="stat-row"><span>Total campaign cost</span><strong>${fmt.moneyKM(c.totalCost)}</strong></div>
       <div class="stat-row"><span>Cost per lb finished</span><strong>$${c.costPerLb.toFixed(2)}</strong></div>
-      <div class="stat-row"><span>Revenue at $${state.pricingPerLb.toFixed(2)}/lb</span><strong>${fmt.moneyKM(c.totalFinishedProduct * state.pricingPerLb)}</strong></div>
-      <div class="stat-row"><span>Net of modeled costs <span style="color:var(--gray-dark);font-weight:400;font-size:11px;">(Revenue − Costs)</span></span><strong style="color:${(c.totalFinishedProduct * state.pricingPerLb - c.totalCost) < 0 ? 'var(--warn)' : 'var(--green-dark)'};">${(c.totalFinishedProduct * state.pricingPerLb - c.totalCost) >= 0 ? '+' : '−'}${fmt.moneyKM(Math.abs(c.totalFinishedProduct * state.pricingPerLb - c.totalCost))}</strong></div>
+      <div class="stat-row"><span>Revenue at $${state.pricingPerLb.toFixed(2)}/lb</span><strong>${fmt.moneyKM(c.revenue)}</strong></div>
+      <div class="stat-row"><span>Net profit/loss <span class="subtle">(Revenue − Costs)</span></span><strong class="${c.netPL < 0 ? 'loss-val' : 'profit-val'}">${c.netPL >= 0 ? '+' : '−'}${fmt.moneyKM(Math.abs(c.netPL))}</strong></div>
       <div class="stat-row"><span>Margin per lb</span><strong>$${(state.pricingPerLb - c.costPerLb).toFixed(2)}</strong></div>
       ${truckRow}
       ${tankerRow}
@@ -792,10 +821,9 @@
 
     // Stage 2: Breaker
     if (state.breakLoc === 'abem') {
-      const abemHrs = state.abemShiftHrs * state.abemDaysPerWk;
-      const brkCap = abemHrs * state.breakerEggsPerHr;
+      const brkCap = c.abemHrsAvailable * state.breakerEggsPerHr;
       stages.push({
-        label: `AbEM breaker (${abemHrs} hr/wk)`,
+        label: `AbEM breaker (${c.abemHrsAvailable} hr/wk)`,
         need: `${fmt.numKM(eggsPerWk)} eggs`,
         cap: `${fmt.numKM(brkCap)} eggs`,
         util: eggsPerWk / brkCap,
