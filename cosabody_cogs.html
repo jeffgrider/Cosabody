@@ -57,7 +57,7 @@
   .toggle:hover:not(.active):not(.disabled) { color: var(--text); }
   .toggle.disabled { opacity: 0.3; cursor: not-allowed; }
   /* Inline config rows (label left, slide toggle right) inside Inputs card */
-  .config-inline { display: grid; grid-template-columns: 200px 1fr; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .config-inline { display: grid; grid-template-columns: 200px 1fr 110px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
   .config-inline > label { color: var(--text); font-weight: 500; }
   .config-inline > .toggle-group { justify-self: center; }
   .slider-row { display: grid; grid-template-columns: 200px 1fr 110px; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
@@ -139,9 +139,10 @@
   .phase-segment { display: flex; flex-direction: column; justify-content: center; padding: 6px 12px; min-width: 0; overflow: hidden; }
   .phase-drying { background: #DCEAD0; color: #3A5722; }
   .phase-coating { background: #DCE2EE; color: #3A4768; }
-  .phase-name { font-weight: 700; font-size: 13px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-name { font-weight: 700; font-size: 13px; line-height: 1.2; white-space: nowrap; overflow: visible; }
   .phase-total { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px; line-height: 1.2; }
   .phase-meta { font-size: 10px; opacity: 0.75; margin-top: 1px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-premium { display: inline-block; padding: 1px 6px; background: rgba(255,255,255,0.85); color: #806000; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; vertical-align: 1px; margin-left: 4px; }
   .phase-axis { display: flex; font-size: 12px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; margin-top: 6px; }
   .phase-axis > span { padding: 0 2px; }
   .phase-axis .ax-end { margin-left: auto; }
@@ -523,8 +524,10 @@
     const dryerHrsPerWeek5 = 24 * 5 * (s.dryerEfficiency / 100);
     const dryerLiquidCapacityAt5 = (dryerHrsPerWeek5 * s.glattWaterRate) / waterFraction;
     const dryingNeeds6thDay = liquidLbsPerWeek > dryerLiquidCapacityAt5;
-    const dryingWeeklyRate = s.plantBaseWeekly + (is24_6 && dryingNeeds6thDay ? s.plantSixthDayPremium : 0);
-    const coatingWeeklyRate = s.plantBaseWeekly + (is24_6 ? s.plantSixthDayPremium : 0);
+    const dryingHasPremium = is24_6 && dryingNeeds6thDay;
+    const coatingHasPremium = is24_6;
+    const dryingWeeklyRate = s.plantBaseWeekly + (dryingHasPremium ? s.plantSixthDayPremium : 0);
+    const coatingWeeklyRate = s.plantBaseWeekly + (coatingHasPremium ? s.plantSixthDayPremium : 0);
 
     const plantWeeks = dryingWeeks + coatingWeeks;
     const dryingPhaseCost = dryingWeeks * dryingWeeklyRate;
@@ -594,7 +597,7 @@
       sodiumSulfateAdded, sodiumSulfateCost,
       eggMass, solidsPct, dryingWeeks, coatingWeeks, plantWeeks,
       birdCost, inoculantCost, plantCost, dryingPhaseCost, coatingPhaseCost,
-      dryingPhaseTotal, coatingPhaseTotal,
+      dryingPhaseTotal, coatingPhaseTotal, dryingHasPremium, coatingHasPremium,
       breakingCost, breakingDetail,
       farmLogistics, breakerToPlantLogistics, totalLogistics,
       farmTruckloads, tankerCount,
@@ -712,15 +715,17 @@
     const dryingBurn = c.dryingPhaseTotal / c.dryingWeeks;
     const coatingBurn = c.coatingPhaseTotal / c.coatingWeeks;
     const totalWeeks = c.dryingWeeks + c.coatingWeeks;
+    const dryBadge = c.dryingHasPremium ? ' <span class="phase-premium">+ 6th day</span>' : '';
+    const coatBadge = c.coatingHasPremium ? ' <span class="phase-premium">+ 6th day</span>' : '';
     const html = `
       <div class="phase-timeline">
         <div class="phase-segment phase-drying" style="flex: ${c.dryingWeeks};">
-          <div class="phase-name">Drying phase · ${c.dryingWeeks} weeks</div>
+          <div class="phase-name">Drying · ${c.dryingWeeks} weeks${dryBadge}</div>
           <div class="phase-total">${fmt.moneyKM(c.dryingPhaseTotal)}</div>
           <div class="phase-meta">${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sugarCost > 0 ? ' + sugar' : ''}</div>
         </div>
         <div class="phase-segment phase-coating" style="flex: ${c.coatingWeeks};">
-          <div class="phase-name">Coating phase · ${c.coatingWeeks} weeks</div>
+          <div class="phase-name">Coating · ${c.coatingWeeks} weeks${coatBadge}</div>
           <div class="phase-total">${fmt.moneyKM(c.coatingPhaseTotal)}</div>
           <div class="phase-meta">${fmt.moneyKM(coatingBurn)}/wk · plant + sodium sulfate</div>
         </div>
