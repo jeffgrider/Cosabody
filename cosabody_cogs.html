@@ -46,7 +46,7 @@
   .output-section + .output-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid #E8E8E8; }
   .output-section > h3 { margin-top: 0; margin-bottom: 6px; }
   /* Single-column stat lists */
-  #volume-detail, #output-detail, #throughput-display { font-size: 13px; }
+  #volume-detail, #materials-detail, #output-detail, #throughput-display { font-size: 13px; }
   .card { background: white; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   .toggle-group { display: inline-flex; padding: 2px; background: var(--gray-light); border-radius: 14px; gap: 0; align-items: center; }
   .toggle { padding: 4px 12px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-weight: 500; color: var(--gray-dark); border-radius: 12px; transition: all 0.15s; user-select: none; line-height: 1.3; white-space: nowrap; }
@@ -85,6 +85,10 @@
   .bar-value-stack { text-align: right; font-family: 'Roboto Mono', monospace; line-height: 1.2; }
   .bar-value-stack .v-main { font-weight: 700; font-size: 14px; display: block; color: var(--text); }
   .bar-value-stack .v-sub { font-size: 11px; color: var(--gray-dark); display: block; margin-top: 2px; }
+  .bar-total { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--gray-mid); margin-top: 4px; padding-top: 8px; }
+  .bar-total .bar-label { font-weight: 700; }
+  .bar-total .total-value { font-family: 'Roboto Mono', monospace; font-weight: 700; font-size: 15px; color: var(--text); white-space: nowrap; }
+  .bar-total .total-value .total-pct { font-size: 12px; color: var(--gray-dark); margin-left: 8px; }
   .output-card .stat-grid { grid-template-columns: 1fr; gap: 0 0; }
   .bn-row { display: grid; grid-template-columns: 1.5fr 1.1fr 1.1fr 1fr 55px; gap: 14px; align-items: center; padding: 8px 0; font-size: 13px; border-bottom: 1px dashed #eee; }
   .bn-row:last-child { border-bottom: none; }
@@ -99,8 +103,8 @@
   .bn-util.yellow { color: #B07000; }
   .bn-util.red { color: var(--warn); }
   .bn-util.info { color: var(--gray-mid); }
-  .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
-  @media (max-width: 920px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(11, auto); } }
+  .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(8, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
+  @media (max-width: 920px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(12, auto); } }
   @media (max-width: 600px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
   .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
   .ass-row > span.ass-label { color: var(--text); font-weight: 500; }
@@ -122,6 +126,18 @@
   .stat-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #eee; }
   .stat-row strong { font-family: 'Roboto Mono', monospace; }
   .footnote { font-size: 11px; color: var(--gray-dark); font-style: italic; margin-top: 10px; line-height: 1.5; }
+  .phase-section { margin-top: 8px; }
+  .phase-section h2 { margin-top: 8px; }
+  .phase-timeline { display: flex; height: 64px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+  .phase-segment { display: flex; flex-direction: column; justify-content: center; padding: 6px 12px; min-width: 0; overflow: hidden; }
+  .phase-drying { background: #DCEAD0; color: #3A5722; }
+  .phase-coating { background: #DCE2EE; color: #3A4768; }
+  .phase-name { font-weight: 700; font-size: 13px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-total { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 2px; line-height: 1.2; }
+  .phase-meta { font-size: 10px; opacity: 0.75; margin-top: 1px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-axis { display: flex; font-size: 10px; color: var(--gray-dark); font-family: 'Roboto Mono', monospace; margin-top: 4px; }
+  .phase-axis > span { padding: 0 2px; }
+  .phase-axis .ax-end { margin-left: auto; }
   .presets { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .presets-label { font-size: 13px; color: var(--gray-dark); font-weight: 500; margin-right: 4px; }
   .preset-btn { padding: 9px 18px; border: 2px solid var(--green-dark); background: white; color: var(--green-dark); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; user-select: none; font-family: inherit; }
@@ -211,6 +227,10 @@
       <h2>Cost breakdown</h2>
       <div id="breakdown"></div>
       <div class="footnote" id="footnote"></div>
+      <div class="phase-section">
+        <h2>Phase timing</h2>
+        <div id="phase-timeline"></div>
+      </div>
     </div>
 
     <div class="card output-card">
@@ -218,6 +238,10 @@
       <div class="output-section">
         <h3>Volumes</h3>
         <div id="volume-detail"></div>
+      </div>
+      <div class="output-section">
+        <h3>Materials</h3>
+        <div id="materials-detail"></div>
       </div>
       <div class="output-section">
         <h3>Costs</h3>
@@ -261,8 +285,11 @@
     logisticsBreakerToPlant: 800,
     pricingPerLb: 6.20,
     htSplitPct: 60,
+    sugarPctDilution: 0,
     // Editable plant/operational constants (previously hardcoded)
     htEncapsulationRate: 45,
+    sugarCostPerLb: 0.69,
+    sodiumSulfateCostPerLb: 0.21,
     glattWaterRate: 1000,
     dryerEfficiency: 95,
     glattEncapPerDay: 10000,
@@ -282,6 +309,7 @@
     eggMassWhole: 50, eggMassYolk: 17,
     solidsWhole: 24.5, solidsYolk: 44.5,
     htEncapsulationRate: 45,
+    sugarCostPerLb: 0.69, sodiumSulfateCostPerLb: 0.21,
     glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
     plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
     inoculantFixed: 80000, inoculantPerBird: 0.10,
@@ -296,6 +324,7 @@
   const INPUT_DEFAULTS = {
     eggCostPerDozen: 0.75,
     pricingPerLb: 6.20,
+    sugarPctDilution: 0,
   };
 
   const editableAssumptions = [
@@ -313,6 +342,8 @@
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
     { key: 'inoculantFixed', label: 'Inoculant fixed', unit: '$', step: 5000, min: 0, max: 250000 },
     { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 2.00 },
+    { key: 'sugarCostPerLb', label: 'Sugar cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
+    { key: 'sodiumSulfateCostPerLb', label: 'Sodium sulfate cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 1000 },
     { key: 'externalBreakerPerLb', label: 'External breaker', unit: '$/lb', step: 0.01, min: 0, max: 0.30 },
     { key: 'logisticsFarmToBreaker', label: 'Farm pickup', unit: '$/load', step: 50, min: 0, max: 3000 },
@@ -330,6 +361,7 @@
 
   const costSliders = [
     { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen', tag: 'estimate' },
+    { key: 'sugarPctDilution', label: 'Sugar dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
     { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%', tag: 'assumption' },
   ];
@@ -438,17 +470,36 @@
     const totalLiquidLbs = liquidLbsPerWeek * s.layWeeks;
     const solidsPerWeek = liquidLbsPerWeek * (solidsPct / 100);
     const totalCosabody = solidsPerWeek * s.layWeeks;
-    const htBase = totalCosabody * (s.htSplitPct / 100);
+
+    // Sugar dilution: bumps Cosabody base mass up to (raw / (1 - dilution)).
+    // Dilution applies to the dried Cosabody base BEFORE the HT split, so HT-bound
+    // and direct-ship Cosabody both inherit the dilution.
+    const dilution = (s.sugarPctDilution || 0) / 100;
+    const dilutionFactor = 1 - dilution;  // safe: slider max is 25%, factor stays >= 0.75
+    const dilutedSolidsPerWeek = solidsPerWeek / dilutionFactor;
+    const dilutedCosabody = totalCosabody / dilutionFactor;
+    const sugarAdded = dilutedCosabody - totalCosabody;
+    const sugarCost = sugarAdded * (s.sugarCostPerLb || 0);
+
     const cosabodyFrac = 1 - (s.htEncapsulationRate / 100);
+    const htBase = dilutedCosabody * (s.htSplitPct / 100);
     const htAfterCoating = htBase / cosabodyFrac;
-    const cosabodyRemaining = totalCosabody * (1 - s.htSplitPct / 100);
+    const cosabodyRemaining = dilutedCosabody * (1 - s.htSplitPct / 100);
     const totalFinishedProduct = htAfterCoating + cosabodyRemaining;
+
+    // Sodium sulfate: 45% of the HT product mass (after coating). Charged at $/lb.
+    const sodiumSulfateAdded = htAfterCoating * (s.htEncapsulationRate / 100);
+    const sodiumSulfateCost = sodiumSulfateAdded * (s.sodiumSulfateCostPerLb || 0);
 
     const dryingWeeks = s.eggType === 'whole' ? s.layWeeks : Math.max(1, s.layWeeks - 1);
 
+    // wholeEq is "what if these eggs were whole-egg" used for coating-week capacity
+    // planning. Dilution applies to wholeEq the same way — sugar gets added regardless of
+    // whether the source is whole egg or yolk.
     const wholeEqLiquidPerWeek = (eggsPerWeek * s.eggMassWhole) / 454;
     const wholeEqSolidsPerWeek = wholeEqLiquidPerWeek * (s.solidsWhole / 100);
-    const wholeEqHTAfterCoating = (wholeEqSolidsPerWeek * s.layWeeks * (s.htSplitPct / 100)) / cosabodyFrac;
+    const wholeEqDilutedSolidsPerWeek = wholeEqSolidsPerWeek / dilutionFactor;
+    const wholeEqHTAfterCoating = (wholeEqDilutedSolidsPerWeek * s.layWeeks * (s.htSplitPct / 100)) / cosabodyFrac;
 
     // Single Glatt/Dryer machine, single schedule. Encapsulation rate × days/wk.
     const days = s.dryerSchedule === '24-5' ? 5 : 6;
@@ -491,8 +542,13 @@
       breakerToPlantLogistics = tankerCount * s.logisticsBreakerToPlant;
     }
     const totalLogistics = farmLogistics + breakerToPlantLogistics;
-    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics;
+    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics + sugarCost + sodiumSulfateCost;
     const costPerLb = totalFinishedProduct > 0 ? totalCost / totalFinishedProduct : 0;
+
+    // Phase totals: drying phase carries every cost except sodium sulfate (which is added
+    // during coating). Useful for cash-flow planning since drying-phase burn is much heavier.
+    const dryingPhaseTotal = dryingPhaseCost + birdCost + inoculantCost + breakingCost + totalLogistics + sugarCost;
+    const coatingPhaseTotal = coatingPhaseCost + sodiumSulfateCost;
 
     // Dryer cap derived from Glatt water-removal rate, schedule, feed water fraction, and break
     // location. External breaker rounds down to whole tankers.
@@ -514,9 +570,13 @@
     return {
       eggsPerDay, eggsPerWeek, totalEggs,
       liquidLbsPerWeek, totalLiquidLbs,
-      solidsPerWeek, totalCosabody, htBase, htAfterCoating, cosabodyRemaining, totalFinishedProduct,
+      solidsPerWeek, totalCosabody,
+      dilutedSolidsPerWeek, dilutedCosabody, sugarAdded, sugarCost,
+      htBase, htAfterCoating, cosabodyRemaining, totalFinishedProduct,
+      sodiumSulfateAdded, sodiumSulfateCost,
       eggMass, solidsPct, dryingWeeks, coatingWeeks, plantWeeks,
       birdCost, inoculantCost, plantCost, dryingPhaseCost, coatingPhaseCost,
+      dryingPhaseTotal, coatingPhaseTotal,
       breakingCost, breakingDetail,
       farmLogistics, breakerToPlantLogistics, totalLogistics,
       farmTruckloads, tankerCount,
@@ -574,6 +634,10 @@
 
   function renderWarnings(c) {
     const warns = [];
+    const netProfit = c.totalFinishedProduct * state.pricingPerLb - c.totalCost;
+    if (netProfit < 0) {
+      warns.push({ type: 'warn', msg: 'Operating at a loss.' });
+    }
     if (c.dryerUtil > 1) {
       warns.push({ type: 'warn', msg: `Dryer overloaded at ${(c.dryerUtil*100).toFixed(0)}%.` });
     }
@@ -587,13 +651,15 @@
   }
 
   function renderBreakdown(c) {
+    const rawMaterials = c.sugarCost + c.sodiumSulfateCost;
     const items = [
       { label: 'Raw eggs', value: c.birdCost, color: '#75C147' },
       { label: 'Inoculant', value: c.inoculantCost, color: '#10A040' },
       { label: 'Plant', value: c.plantCost, color: '#3F8FB5' },
-      { label: state.breakLoc === 'abem' ? 'AbEM breaking' : 'External breaking', value: c.breakingCost, color: '#70C0E0' },
+      { label: 'Breaking', value: c.breakingCost, color: '#70C0E0' },
+      { label: 'Raw materials', value: rawMaterials, color: '#8E9AAF' },
       { label: 'Logistics', value: c.totalLogistics, color: '#F0D030' },
-    ].sort((a, b) => b.value - a.value);
+    ].filter(i => i.value > 0).sort((a, b) => b.value - a.value);
 
     const total = c.totalCost || 1;
     const max = Math.max(...items.map(i => i.value)) || 1;
@@ -604,7 +670,9 @@
       return `<div class="bar-row"><div class="bar-label">${i.label}</div><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%; background:${i.color};"></div></div><div class="bar-value-stack"><span class="v-main">${fmt.moneyKM(i.value)}</span><span class="v-sub">${pct.toFixed(1)}%</span></div></div>`;
     }).join('');
 
-    document.getElementById('breakdown').innerHTML = `<div class="bar-chart">${rowsHtml}</div>`;
+    const totalRowHtml = `<div class="bar-row bar-total"><div class="bar-label"><strong>Total Campaign Cost</strong></div><div class="total-value">${fmt.moneyKM(c.totalCost)}<span class="total-pct">100%</span></div></div>`;
+
+    document.getElementById('breakdown').innerHTML = `<div class="bar-chart">${rowsHtml}${totalRowHtml}</div>`;
 
     const weekRate = (c.dryingPhaseCost / c.dryingWeeks) / 1000;
     const dayLabel = state.dryerSchedule.replace('-', '×');
@@ -612,10 +680,39 @@
     let foot = `Plant = ${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${weekRate.toFixed(0)}K/wk (${dayLabel} day, single Glatt/Dryer machine, sequential modes). `;
     foot += `Inoculant = $80K fixed + $0.10/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
     foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
+    const rawParts = [];
+    if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
+    if (c.sugarCost > 0) rawParts.push(`sugar ${fmt.numKM(c.sugarAdded)} lbs × $${state.sugarCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sugarCost)}`);
+    if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
     foot += `Logistics = ${c.farmTruckloads} farm-pickup truckloads`;
     if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker→plant`;
     foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks.`;
     document.getElementById('footnote').textContent = foot;
+  }
+
+  function renderPhaseTimeline(c) {
+    const dryingBurn = c.dryingPhaseTotal / c.dryingWeeks;
+    const coatingBurn = c.coatingPhaseTotal / c.coatingWeeks;
+    const totalWeeks = c.dryingWeeks + c.coatingWeeks;
+    const html = `
+      <div class="phase-timeline">
+        <div class="phase-segment phase-drying" style="flex: ${c.dryingWeeks};">
+          <div class="phase-name">Drying phase · ${c.dryingWeeks} weeks</div>
+          <div class="phase-total">${fmt.moneyKM(c.dryingPhaseTotal)}</div>
+          <div class="phase-meta">${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sugarCost > 0 ? ' + sugar' : ''}</div>
+        </div>
+        <div class="phase-segment phase-coating" style="flex: ${c.coatingWeeks};">
+          <div class="phase-name">Coating phase · ${c.coatingWeeks} weeks</div>
+          <div class="phase-total">${fmt.moneyKM(c.coatingPhaseTotal)}</div>
+          <div class="phase-meta">${fmt.moneyKM(coatingBurn)}/wk · plant + sodium sulfate</div>
+        </div>
+      </div>
+      <div class="phase-axis">
+        <span>Week 1</span>
+        <span class="ax-end">Week ${totalWeeks}</span>
+      </div>
+    `;
+    document.getElementById('phase-timeline').innerHTML = html;
   }
 
   function renderThroughput(c) {
@@ -624,28 +721,37 @@
       <div class="stat-row"><span>Eggs / week</span><strong>${fmt.numKM(c.eggsPerWeek)}</strong></div>
       <div class="stat-row"><span>Solids % (auto)</span><strong>${c.solidsPct.toFixed(1)}%</strong></div>
       <div class="stat-row"><span>Liquid / week</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs <span style="color:var(--gray-dark);font-weight:400;font-size:11px;">(${(c.liquidLbsPerWeek/state.tankerLbsCapacity).toFixed(2)} tanker equiv)</span></strong></div>
-      <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.solidsPerWeek)} lbs</strong></div>
+      <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.dilutedSolidsPerWeek)} lbs</strong></div>
       <div class="stat-row"><span>Drying weeks (output)</span><strong>${c.dryingWeeks} wk</strong></div>
-      <div class="stat-row"><span>HT / week</span><strong>${fmt.numKM(c.htAfterCoating / c.coatingWeeks)} lbs</strong></div>
       <div class="stat-row"><span>Coating weeks (output)</span><strong>${c.coatingWeeks} wk</strong></div>
       <div class="stat-row"><span>Plant operating weeks</span><strong>${c.plantWeeks} wk</strong></div>
       <div class="stat-row"><span>Dryer utilization (vs ${fmt.numKM(c.dryerLiquidCapacity)} lbs/wk)</span><strong>${(c.dryerUtil*100).toFixed(0)}%</strong></div>
       <div class="stat-row"><span>Encapsulation utilization (vs ${fmt.numKM(c.glattCapacityPerWeek)}/wk)</span><strong>${(c.glattUtil*100).toFixed(0)}%</strong></div>
-      ${state.breakLoc === 'abem' ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}${c.breakerHrsNeeded > (state.abemShiftHrs * state.abemDaysPerWk) ? ' <span style="color:#806000;font-weight:500;font-size:11px;">premium applied</span>' : ''}</strong></div>` : ''}
+      ${state.breakLoc === 'abem'
+        ? `<div class="stat-row"><span>Breaker hrs / week</span><strong>${c.breakerHrsNeeded.toFixed(1)}${c.breakerHrsNeeded > (state.abemShiftHrs * state.abemDaysPerWk) ? ' <span style="color:#806000;font-weight:500;font-size:11px;">premium applied</span>' : ''}</strong></div>`
+        : `<div class="stat-row"><span>Breaker hrs / week</span><strong style="color:var(--gray-dark);font-weight:500;">N/A (external)</strong></div>`}
     `;
     document.getElementById('throughput-display').innerHTML = html;
   }
 
   function renderVolumeDetail(c) {
     const html = `
-      <div class="stat-row"><span>Total Cosabody base produced</span><strong>${fmt.numKM(c.totalCosabody)} lbs</strong></div>
+      <div class="stat-row"><span>Total Cosabody base produced</span><strong>${fmt.numKM(c.dilutedCosabody)} lbs</strong></div>
       <div class="stat-row"><span>HT after coating (${state.htSplitPct}%)</span><strong>${fmt.numKM(c.htAfterCoating)} lbs</strong></div>
       <div class="stat-row"><span>Cosabody remaining (${100-state.htSplitPct}%)</span><strong>${fmt.numKM(c.cosabodyRemaining)} lbs</strong></div>
       <div class="stat-row"><span><strong>Total finished product</strong></span><strong>${fmt.numKM(c.totalFinishedProduct)} lbs</strong></div>
-      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
-      <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)}</strong></div>
     `;
     document.getElementById('volume-detail').innerHTML = html;
+  }
+
+  function renderMaterialsDetail(c) {
+    const html = `
+      <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)}</strong></div>
+      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
+      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${fmt.numKM(c.sugarAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
+    `;
+    document.getElementById('materials-detail').innerHTML = html;
   }
 
   function renderOutputDetail(c) {
@@ -653,14 +759,18 @@
     const tankerRow = state.breakLoc === 'external'
       ? `<div class="stat-row"><span>Tankers (breaker to plant)</span><strong>${c.tankerCount} × ${fmt.moneyKM(state.logisticsBreakerToPlant)} = ${fmt.moneyKM(c.breakerToPlantLogistics)}</strong></div>`
       : '';
+    const sulfateRow = `<div class="stat-row"><span>Sodium sulfate</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}</strong></div>`;
+    const sugarRow = `<div class="stat-row"><span>Sugar</span><strong>${fmt.numKM(c.sugarAdded)} lbs × $${state.sugarCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sugarCost)}</strong></div>`;
     const html = `
       <div class="stat-row"><span>Total campaign cost</span><strong>${fmt.moneyKM(c.totalCost)}</strong></div>
       <div class="stat-row"><span>Cost per lb finished</span><strong>$${c.costPerLb.toFixed(2)}</strong></div>
       <div class="stat-row"><span>Revenue at $${state.pricingPerLb.toFixed(2)}/lb</span><strong>${fmt.moneyKM(c.totalFinishedProduct * state.pricingPerLb)}</strong></div>
-      <div class="stat-row"><span>Net of modeled costs</span><strong>${fmt.moneyKM(c.totalFinishedProduct * state.pricingPerLb - c.totalCost)}</strong></div>
+      <div class="stat-row"><span>Net of modeled costs <span style="color:var(--gray-dark);font-weight:400;font-size:11px;">(Revenue − Costs)</span></span><strong style="color:${(c.totalFinishedProduct * state.pricingPerLb - c.totalCost) < 0 ? 'var(--warn)' : 'var(--green-dark)'};">${(c.totalFinishedProduct * state.pricingPerLb - c.totalCost) >= 0 ? '+' : '−'}${fmt.moneyKM(Math.abs(c.totalFinishedProduct * state.pricingPerLb - c.totalCost))}</strong></div>
       <div class="stat-row"><span>Margin per lb</span><strong>$${(state.pricingPerLb - c.costPerLb).toFixed(2)}</strong></div>
       ${truckRow}
       ${tankerRow}
+      ${sulfateRow}
+      ${sugarRow}
     `;
     document.getElementById('output-detail').innerHTML = html;
   }
@@ -733,8 +843,13 @@
     document.getElementById('bottleneck').innerHTML = headerHtml + rowsHtml;
   }
 
-  function formatAssumptionValue(v) {
-    // Use thousand-separators for integer values >= 1000; leave decimals/small ints alone.
+  function formatAssumptionValue(v, def) {
+    // Sub-integer steps get fixed-decimal formatting so e.g. 0.1 -> "0.10" (step 0.01).
+    if (def && def.step && def.step < 1) {
+      const decimals = def.step >= 0.1 ? 1 : 2;
+      return v.toFixed(decimals);
+    }
+    // Use thousand-separators for integer values >= 1000.
     if (Number.isInteger(v) && Math.abs(v) >= 1000) {
       return v.toLocaleString('en-US');
     }
@@ -757,7 +872,7 @@
       const input = document.createElement('input');
       input.type = 'text';
       input.inputMode = 'decimal';
-      input.value = formatAssumptionValue(state[def.key]);
+      input.value = formatAssumptionValue(state[def.key], def);
       input.dataset.key = def.key;
       const isModified = ASSUMPTION_DEFAULTS[def.key] !== undefined && state[def.key] !== ASSUMPTION_DEFAULTS[def.key];
       if (isModified) input.classList.add('modified');
@@ -781,8 +896,8 @@
         if (input.classList.contains('invalid')) {
           input.classList.remove('invalid');
         }
-        // Reformat on blur so e.g. "98000" becomes "98,000"
-        input.value = formatAssumptionValue(state[def.key]);
+        // Reformat on blur so e.g. "98000" becomes "98,000" and "0.1" becomes "0.10"
+        input.value = formatAssumptionValue(state[def.key], def);
       });
       input.addEventListener('focus', e => {
         // While editing, show the raw value (no commas) for easier numeric editing
@@ -824,8 +939,10 @@
     renderHeadline(c);
     renderWarnings(c);
     renderBreakdown(c);
+    renderPhaseTimeline(c);
     renderThroughput(c);
     renderVolumeDetail(c);
+    renderMaterialsDetail(c);
     renderOutputDetail(c);
     renderBottleneck(c);
     updateFlockSizeColor(c);
@@ -842,7 +959,7 @@
   // pricing) stay where the user left them so price/input sensitivity still applies.
   const presets = {
     conservative: {
-      flockSize: 170000, breakLoc: 'abem', dryerSchedule: '24-5',
+      flockSize: 175000, breakLoc: 'abem', dryerSchedule: '24-5',
       eggType: 'whole', htSplitPct: 60,
     },
     realistic: {
