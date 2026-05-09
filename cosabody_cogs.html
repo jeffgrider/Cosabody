@@ -306,8 +306,8 @@
     glattEncapPerDay: 10000,
     plantBaseWeekly: 98000,
     plantSixthDayPremium: 5000,
-    inoculantFixed: 300000,
-    inoculantPerBird: 0,
+    inoculantFixed: 0,
+    inoculantPerBird: 1.578,
     abemShiftHrs: 8,
     abemDaysPerWk: 5,
     truckEggCapacity: 360000,
@@ -323,7 +323,7 @@
     sugarCostPerLb: 0.69, sodiumSulfateCostPerLb: 0.21,
     glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
     plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
-    inoculantFixed: 300000, inoculantPerBird: 0,
+    inoculantFixed: 0, inoculantPerBird: 1.578,
     abemBreakingPerHr: 350, externalBreakerPerLb: 0.12,
     logisticsFarmToBreaker: 1000, logisticsBreakerToPlant: 800,
     breakerEggsPerHr: 48600,
@@ -351,7 +351,7 @@
     { key: 'glattEncapPerDay', label: 'Glatt encap rate', unit: 'lbs/day', step: 500, min: 2000, max: 25000 },
     { key: 'plantBaseWeekly', label: 'Plant cost (24/5)', unit: '$/wk', step: 1000, min: 30000, max: 250000 },
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
-    { key: 'inoculantFixed', label: 'Inoculant cost', unit: '$', step: 10000, min: 0, max: 1000000 },
+    { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 5.00 },
     { key: 'sugarCostPerLb', label: 'Sugar cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'sodiumSulfateCostPerLb', label: 'Sodium sulfate cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 1000 },
@@ -534,7 +534,7 @@
     const coatingPhaseCost = coatingWeeks * coatingWeeklyRate;
     const plantCost = dryingPhaseCost + coatingPhaseCost;
     const birdCost = (totalEggs / 12) * s.eggCostPerDozen;
-    const inoculantCost = s.inoculantFixed;
+    const inoculantCost = s.inoculantPerBird * s.flockSize;
 
     let breakingCost = 0;
     let breakingDetail = '';
@@ -699,7 +699,7 @@
       ? `${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${dryRate.toFixed(0)}K/wk`
       : `${c.dryingWeeks} drying wk @ $${dryRate.toFixed(0)}K/wk + ${c.coatingWeeks} coating wk @ $${coatRate.toFixed(0)}K/wk`;
     let foot = `Glatt = ${plantStr} (single Glatt/Dryer machine, sequential modes). `;
-    foot += `Inoculant = ${fmt.moneyKM(state.inoculantFixed)} flat. `;
+    foot += `Inoculant = $${state.inoculantPerBird.toFixed(3)}/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
     foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
     const rawParts = [];
     if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
