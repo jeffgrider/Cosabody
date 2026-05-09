@@ -163,8 +163,8 @@
   <div class="presets-row">
     <div class="presets">
       <span class="presets-label">Quick scenarios:</span>
-      <button class="preset-btn" data-preset="conservative" type="button">Conservative</button>
-      <button class="preset-btn" data-preset="realistic" type="button">Realistic</button>
+      <button class="preset-btn" data-preset="breakeven" type="button">Breakeven</button>
+      <button class="preset-btn" data-preset="aggressive" type="button">Aggressive</button>
       <button class="preset-btn" data-preset="maximum" type="button">Maximum</button>
     </div>
     <div id="warnings" class="warnings-inline"></div>
@@ -306,8 +306,8 @@
     glattEncapPerDay: 10000,
     plantBaseWeekly: 98000,
     plantSixthDayPremium: 5000,
-    inoculantFixed: 80000,
-    inoculantPerBird: 0.10,
+    inoculantFixed: 300000,
+    inoculantPerBird: 0,
     abemShiftHrs: 8,
     abemDaysPerWk: 5,
     truckEggCapacity: 360000,
@@ -323,7 +323,7 @@
     sugarCostPerLb: 0.69, sodiumSulfateCostPerLb: 0.21,
     glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
     plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
-    inoculantFixed: 80000, inoculantPerBird: 0.10,
+    inoculantFixed: 300000, inoculantPerBird: 0,
     abemBreakingPerHr: 350, externalBreakerPerLb: 0.12,
     logisticsFarmToBreaker: 1000, logisticsBreakerToPlant: 800,
     breakerEggsPerHr: 48600,
@@ -351,8 +351,7 @@
     { key: 'glattEncapPerDay', label: 'Glatt encap rate', unit: 'lbs/day', step: 500, min: 2000, max: 25000 },
     { key: 'plantBaseWeekly', label: 'Plant cost (24/5)', unit: '$/wk', step: 1000, min: 30000, max: 250000 },
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
-    { key: 'inoculantFixed', label: 'Inoculant fixed', unit: '$', step: 5000, min: 0, max: 250000 },
-    { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 2.00 },
+    { key: 'inoculantFixed', label: 'Inoculant cost', unit: '$', step: 10000, min: 0, max: 1000000 },
     { key: 'sugarCostPerLb', label: 'Sugar cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'sodiumSulfateCostPerLb', label: 'Sodium sulfate cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 1000 },
@@ -535,7 +534,7 @@
     const coatingPhaseCost = coatingWeeks * coatingWeeklyRate;
     const plantCost = dryingPhaseCost + coatingPhaseCost;
     const birdCost = (totalEggs / 12) * s.eggCostPerDozen;
-    const inoculantCost = s.inoculantFixed + s.inoculantPerBird * s.flockSize;
+    const inoculantCost = s.inoculantFixed;
 
     let breakingCost = 0;
     let breakingDetail = '';
@@ -674,7 +673,7 @@
     const items = [
       { label: 'Raw eggs', value: c.birdCost, color: '#75C147' },
       { label: 'Inoculant', value: c.inoculantCost, color: '#10A040' },
-      { label: 'Plant', value: c.plantCost, color: '#3F8FB5' },
+      { label: 'Glatt', value: c.plantCost, color: '#3F8FB5' },
       { label: 'Breaking', value: c.breakingCost, color: '#70C0E0' },
       { label: 'Raw materials', value: rawMaterials, color: '#8E9AAF' },
       { label: 'Logistics', value: c.totalLogistics, color: '#F0D030' },
@@ -699,8 +698,8 @@
     const plantStr = Math.round(dryRate) === Math.round(coatRate)
       ? `${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${dryRate.toFixed(0)}K/wk`
       : `${c.dryingWeeks} drying wk @ $${dryRate.toFixed(0)}K/wk + ${c.coatingWeeks} coating wk @ $${coatRate.toFixed(0)}K/wk`;
-    let foot = `Plant = ${plantStr} (single Glatt/Dryer machine, sequential modes). `;
-    foot += `Inoculant = ${fmt.moneyKM(state.inoculantFixed)} fixed + $${state.inoculantPerBird.toFixed(2)}/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
+    let foot = `Glatt = ${plantStr} (single Glatt/Dryer machine, sequential modes). `;
+    foot += `Inoculant = ${fmt.moneyKM(state.inoculantFixed)} flat. `;
     foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
     const rawParts = [];
     if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
@@ -992,12 +991,12 @@
   // Preset scenarios. Each sets the operational levers; cost inputs (egg $/dz, inoculant,
   // pricing) stay where the user left them so price/input sensitivity still applies.
   const presets = {
-    conservative: {
-      flockSize: 175000, breakLoc: 'abem', dryerSchedule: '24-5',
-      eggType: 'whole', htSplitPct: 60,
-    },
-    realistic: {
+    breakeven: {
       flockSize: 200000, breakLoc: 'abem', dryerSchedule: '24-5',
+      eggType: 'whole', htSplitPct: 70,
+    },
+    aggressive: {
+      flockSize: 220000, breakLoc: 'abem', dryerSchedule: '24-6',
       eggType: 'whole', htSplitPct: 70,
     },
     maximum: {
@@ -1045,7 +1044,7 @@
   document.getElementById('reset-assumptions-btn').addEventListener('click', resetAssumptions);
 
   renderAssumptions();
-  applyPreset('realistic');
+  applyPreset('breakeven');
 </script>
 </body>
 </html>
