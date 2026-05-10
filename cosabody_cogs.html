@@ -294,7 +294,7 @@
     externalBreakerPerLb: 0.12,
     logisticsFarmToBreaker: 1000,
     logisticsBreakerToPlant: 800,
-    pricingPerLb: 6.20,
+    pricingPerLb: 6.00,
     htSplitPct: 60,
     sugarPctDilution: 0,
     // Editable plant/operational constants (previously hardcoded)
@@ -334,7 +334,7 @@
   // any user-edited input values snap back to baseline before the preset is applied.
   const INPUT_DEFAULTS = {
     eggCostPerDozen: 0.75,
-    pricingPerLb: 6.20,
+    pricingPerLb: 6.00,
     sugarPctDilution: 0,
   };
 
@@ -373,7 +373,7 @@
     { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen' },
     { key: 'sugarPctDilution', label: 'Sugar dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
-    { key: 'htSplitPct', label: 'HT split %', min: 40, max: 80, step: 5, fmt: 'int', suffix: '%' },
+    { key: 'htSplitPct', label: 'HT split %', min: 40, max: 95, step: 5, fmt: 'int', suffix: '%' },
   ];
 
   const fmt = {
@@ -707,7 +707,7 @@
     if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
     foot += `Logistics = ${c.farmTruckloads} farm-pickup truckloads`;
     if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker to plant`;
-    foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks.`;
+    foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks. Note: lab fees and miscellaneous consumables not included; could add up to $0.10/lb.`;
     document.getElementById('footnote').textContent = foot;
   }
 
@@ -993,15 +993,15 @@
   const presets = {
     breakeven: {
       flockSize: 200000, breakLoc: 'abem', dryerSchedule: '24-5',
-      eggType: 'whole', htSplitPct: 70,
+      eggType: 'whole', htSplitPct: 80,
     },
     aggressive: {
       flockSize: 220000, breakLoc: 'abem', dryerSchedule: '24-6',
-      eggType: 'whole', htSplitPct: 70,
+      eggType: 'whole', htSplitPct: 85,
     },
     maximum: {
       flockSize: 286000, breakLoc: 'abem', dryerSchedule: '24-6',
-      eggType: 'whole', htSplitPct: 80,
+      eggType: 'whole', htSplitPct: 90,
     },
   };
 
