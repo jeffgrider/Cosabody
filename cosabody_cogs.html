@@ -164,7 +164,7 @@
     <div class="presets">
       <span class="presets-label">Quick scenarios:</span>
       <button class="preset-btn" data-preset="breakeven" type="button">Breakeven</button>
-      <button class="preset-btn" data-preset="aggressive" type="button">Aggressive</button>
+      <button class="preset-btn" data-preset="realistic" type="button">Realistic</button>
       <button class="preset-btn" data-preset="maximum" type="button">Maximum</button>
     </div>
     <div id="warnings" class="warnings-inline"></div>
@@ -288,21 +288,23 @@
     eggMassYolk: 17,
     solidsWhole: 24.5,
     solidsYolk: 44.5,
+    moistureRetention: 1.7,
     breakerEggsPerHr: 48600,
+    breakerEfficiency: 86.67,
     eggCostPerDozen: 0.75,
-    abemBreakingPerHr: 350,
+    abemBreakingPerHr: 750,
     externalBreakerPerLb: 0.12,
     logisticsFarmToBreaker: 1000,
     logisticsBreakerToPlant: 800,
     pricingPerLb: 6.00,
     htSplitPct: 60,
-    sugarPctDilution: 0,
+    sulfateDilutionPct: 0,
     // Editable plant/operational constants (previously hardcoded)
     htEncapsulationRate: 45,
-    sugarCostPerLb: 0.69,
     sodiumSulfateCostPerLb: 0.21,
-    glattWaterRate: 1000,
-    dryerEfficiency: 95,
+    glattWaterRate: 950,
+    dryerEfficiency: 85,
+    dryerStartupCleanupHrs: 16,
     glattEncapPerDay: 10000,
     plantBaseWeekly: 98000,
     plantSixthDayPremium: 5000,
@@ -319,14 +321,15 @@
     layRate: 82, layWeeks: 16,
     eggMassWhole: 50, eggMassYolk: 17,
     solidsWhole: 24.5, solidsYolk: 44.5,
+    moistureRetention: 1.7,
     htEncapsulationRate: 45,
-    sugarCostPerLb: 0.69, sodiumSulfateCostPerLb: 0.21,
-    glattWaterRate: 1000, dryerEfficiency: 95, glattEncapPerDay: 10000,
+    sodiumSulfateCostPerLb: 0.21,
+    glattWaterRate: 950, dryerEfficiency: 85, dryerStartupCleanupHrs: 16, glattEncapPerDay: 10000,
     plantBaseWeekly: 98000, plantSixthDayPremium: 5000,
     inoculantFixed: 0, inoculantPerBird: 1.578,
-    abemBreakingPerHr: 350, externalBreakerPerLb: 0.12,
+    abemBreakingPerHr: 750,
     logisticsFarmToBreaker: 1000, logisticsBreakerToPlant: 800,
-    breakerEggsPerHr: 48600,
+    breakerEggsPerHr: 48600, breakerEfficiency: 86.67,
     truckEggCapacity: 360000, tankerLbsCapacity: 48000,
   };
 
@@ -334,8 +337,9 @@
   // any user-edited input values snap back to baseline before the preset is applied.
   const INPUT_DEFAULTS = {
     eggCostPerDozen: 0.75,
+    externalBreakerPerLb: 0.12,
     pricingPerLb: 6.00,
-    sugarPctDilution: 0,
+    sulfateDilutionPct: 0,
   };
 
   const editableAssumptions = [
@@ -345,20 +349,21 @@
     { key: 'eggMassYolk', label: 'Yolk mass', unit: 'g/egg', step: 1, min: 10, max: 25 },
     { key: 'solidsWhole', label: 'Whole-egg solids', unit: '%', step: 0.1, min: 10, max: 50 },
     { key: 'solidsYolk', label: 'Yolk solids', unit: '%', step: 0.1, min: 20, max: 60 },
+    { key: 'moistureRetention', label: 'Finished moisture', unit: '%', step: 0.1, min: 0, max: 8 },
     { key: 'htEncapsulationRate', label: 'HT encapsulation rate', unit: '%', step: 1, min: 20, max: 70 },
-    { key: 'glattWaterRate', label: 'Glatt water removal', unit: 'lbs/hr', step: 50, min: 200, max: 2500 },
+    { key: 'glattWaterRate', label: 'Glatt water removal', unit: 'lbs/hr', step: 25, min: 200, max: 2500 },
     { key: 'dryerEfficiency', label: 'Dryer efficiency', unit: '%', step: 1, min: 50, max: 100 },
+    { key: 'dryerStartupCleanupHrs', label: 'Dryer startup/cleanup', unit: 'hrs', step: 4, min: 0, max: 80 },
     { key: 'glattEncapPerDay', label: 'Glatt encap rate', unit: 'lbs/day', step: 500, min: 2000, max: 25000 },
     { key: 'plantBaseWeekly', label: 'Plant cost (24/5)', unit: '$/wk', step: 1000, min: 30000, max: 250000 },
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
     { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 5.00 },
-    { key: 'sugarCostPerLb', label: 'Sugar cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
     { key: 'sodiumSulfateCostPerLb', label: 'Sodium sulfate cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
-    { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 1000 },
-    { key: 'externalBreakerPerLb', label: 'External breaker', unit: '$/lb', step: 0.01, min: 0, max: 0.30 },
-    { key: 'logisticsFarmToBreaker', label: 'Farm pickup', unit: '$/load', step: 50, min: 0, max: 3000 },
-    { key: 'logisticsBreakerToPlant', label: 'Breaker to plant', unit: '$/tanker', step: 50, min: 0, max: 3000 },
-    { key: 'breakerEggsPerHr', label: 'Breaker rate', unit: 'eggs/hr', step: 1000, min: 5000, max: 150000 },
+    { key: 'abemBreakingPerHr', label: 'AbEM breaking', unit: '$/hr', step: 25, min: 100, max: 2000 },
+    { key: 'logisticsFarmToBreaker', label: 'Farm pickup (AbEM)', unit: '$/load', step: 50, min: 0, max: 3000 },
+    { key: 'logisticsBreakerToPlant', label: 'Farm/breaker to AbEM', unit: '$/tanker', step: 50, min: 0, max: 3000 },
+    { key: 'breakerEggsPerHr', label: 'Breaker rate (max)', unit: 'eggs/hr', step: 1000, min: 5000, max: 150000 },
+    { key: 'breakerEfficiency', label: 'Breaker efficiency', unit: '%', step: 1, min: 50, max: 100 },
     { key: 'truckEggCapacity', label: 'Egg truck capacity', unit: 'eggs', step: 10000, min: 50000, max: 1000000 },
     { key: 'tankerLbsCapacity', label: 'Tanker capacity', unit: 'lbs', step: 1000, min: 10000, max: 100000 },
   ];
@@ -371,7 +376,8 @@
 
   const costSliders = [
     { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.50, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen' },
-    { key: 'sugarPctDilution', label: 'Sugar dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
+    { key: 'externalBreakerPerLb', label: 'External breaker $/lb', min: 0.05, max: 0.25, step: 0.01, fmt: 'money2', suffix: '/lb' },
+    { key: 'sulfateDilutionPct', label: 'Sodium sulfate dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
     { key: 'htSplitPct', label: 'HT split %', min: 40, max: 95, step: 5, fmt: 'int', suffix: '%' },
   ];
@@ -476,20 +482,25 @@
     const abemHrsAvailable = s.abemShiftHrs * s.abemDaysPerWk;
     const eggMass = s.eggType === 'whole' ? s.eggMassWhole : s.eggMassYolk;
     const solidsPct = s.eggType === 'whole' ? s.solidsWhole : s.solidsYolk;
+    const moistureFactor = 1 - ((s.moistureRetention || 0) / 100);
     const liquidLbsPerWeek = (eggsPerWeek * eggMass) / 454;
     const totalLiquidLbs = liquidLbsPerWeek * s.layWeeks;
     const solidsPerWeek = liquidLbsPerWeek * (solidsPct / 100);
-    const totalCosabody = solidsPerWeek * s.layWeeks;
+    // Finished Cosabody base includes retained moisture: every lb of solids becomes
+    // (1 / moistureFactor) lbs of base product. At 1.7% moisture, base = solids × 1.0173.
+    const totalCosabody = (solidsPerWeek * s.layWeeks) / moistureFactor;
 
     // Sugar dilution: bumps Cosabody base mass up to (raw / (1 - dilution)).
     // Dilution applies to the dried Cosabody base BEFORE the HT split, so HT-bound
-    // and direct-ship Cosabody both inherit the dilution.
-    const dilution = (s.sugarPctDilution || 0) / 100;
-    const dilutionFactor = 1 - dilution;  // safe: slider max is 25%, factor stays >= 0.75
+    // and direct-ship Cosabody both inherit the dilution. Dilution material is sodium
+    // sulfate (was previously sugar; same mechanic, different material).
+    const dilution = (s.sulfateDilutionPct || 0) / 100;
+    const dilutionFactor = 1 - dilution;
+    const dilutedCosabodyPerWeek = (totalCosabody / dilutionFactor) / s.layWeeks;
     const dilutedSolidsPerWeek = solidsPerWeek / dilutionFactor;
     const dilutedCosabody = totalCosabody / dilutionFactor;
-    const sugarAdded = dilutedCosabody - totalCosabody;
-    const sugarCost = sugarAdded * (s.sugarCostPerLb || 0);
+    const sulfateDilutionAdded = dilutedCosabody - totalCosabody;
+    const sulfateDilutionCost = sulfateDilutionAdded * s.sodiumSulfateCostPerLb;
 
     const cosabodyFrac = 1 - (s.htEncapsulationRate / 100);
     const htBase = dilutedCosabody * (s.htSplitPct / 100);
@@ -497,7 +508,7 @@
     const cosabodyRemaining = dilutedCosabody * (1 - s.htSplitPct / 100);
     const totalFinishedProduct = htAfterCoating + cosabodyRemaining;
 
-    // Sodium sulfate: 45% of the HT product mass (after coating). Charged at $/lb.
+    // Sodium sulfate (encapsulation): 45% of the HT product mass after coating.
     const sodiumSulfateAdded = htAfterCoating * (s.htEncapsulationRate / 100);
     const sodiumSulfateCost = sodiumSulfateAdded * (s.sodiumSulfateCostPerLb || 0);
 
@@ -508,7 +519,8 @@
     // whether the source is whole egg or yolk.
     const wholeEqLiquidPerWeek = (eggsPerWeek * s.eggMassWhole) / 454;
     const wholeEqSolidsPerWeek = wholeEqLiquidPerWeek * (s.solidsWhole / 100);
-    const wholeEqDilutedSolidsPerWeek = wholeEqSolidsPerWeek / dilutionFactor;
+    const wholeEqCosabodyPerWeek = wholeEqSolidsPerWeek / moistureFactor;
+    const wholeEqDilutedSolidsPerWeek = wholeEqCosabodyPerWeek / dilutionFactor;
     const wholeEqHTAfterCoating = (wholeEqDilutedSolidsPerWeek * s.layWeeks * (s.htSplitPct / 100)) / cosabodyFrac;
 
     // Single Glatt/Dryer machine, single schedule. Encapsulation rate × days/wk.
@@ -519,9 +531,15 @@
     // Per-phase 6th-day premium: drying pays the premium only when 5-day capacity is
     // insufficient (objective need); coating pays whenever 24/6 is selected (the user's
     // explicit choice for faster coating).
+    // Dryer capacity accounts for: (a) the per-shift efficiency multiplier, AND (b) a
+    // one-time campaign-level loss for pasteurization (first shift) and cleanup (last
+    // shift), totaling dryerStartupCleanupHrs over the entire drying campaign.
     const is24_6 = s.dryerSchedule === '24-6';
-    const waterFraction = 1 - (solidsPct / 100);
-    const dryerHrsPerWeek5 = 24 * 5 * (s.dryerEfficiency / 100);
+    // Water removed per lb of liquid: liquid - finished_base = 1 - solids/(1 - moisture).
+    // At 1.7% moisture and 24.5% solids, that's 0.7508 vs the dry-only baseline of 0.7550.
+    const waterFraction = 1 - ((solidsPct / 100) / moistureFactor);
+    const startupCleanupHrs = s.dryerStartupCleanupHrs || 0;
+    const dryerHrsPerWeek5 = (24 * 5 * dryingWeeks * (s.dryerEfficiency / 100) - startupCleanupHrs) / dryingWeeks;
     const dryerLiquidCapacityAt5 = (dryerHrsPerWeek5 * s.glattWaterRate) / waterFraction;
     const dryingNeeds6thDay = liquidLbsPerWeek > dryerLiquidCapacityAt5;
     const dryingHasPremium = is24_6 && dryingNeeds6thDay;
@@ -539,7 +557,9 @@
     let breakingCost = 0;
     let breakingDetail = '';
     if (s.breakLoc === 'abem') {
-      const hrsNeededPerWk = eggsPerWeek / s.breakerEggsPerHr;
+      const breakerEff = (s.breakerEfficiency || 100) / 100;
+      const effectiveRate = s.breakerEggsPerHr * breakerEff;
+      const hrsNeededPerWk = eggsPerWeek / effectiveRate;
       const actualHrsPerWk = Math.max(abemHrsAvailable, hrsNeededPerWk);
       const totalBreakingHrs = actualHrsPerWk * s.layWeeks;
       breakingCost = totalBreakingHrs * s.abemBreakingPerHr;
@@ -553,26 +573,33 @@
       breakingDetail = `${fmt.numKM(totalLiquidLbs)} lbs liquid × $${s.externalBreakerPerLb.toFixed(2)}/lb`;
     }
 
-    const farmTruckloads = Math.ceil(totalEggs / s.truckEggCapacity);
-    const farmLogistics = farmTruckloads * s.logisticsFarmToBreaker;
-    let breakerToPlantLogistics = 0;
+    // Logistics model: AbEM breaking means farm ships whole eggs to the plant (which
+    // contains the breaker). External breaking assumes the farm IS the breaker, so liquid
+    // moves to the plant in tankers and there is no farm-to-breaker leg.
+    let farmTruckloads = 0;
+    let farmLogistics = 0;
     let tankerCount = 0;
-    if (s.breakLoc === 'external') {
+    let breakerToPlantLogistics = 0;
+    if (s.breakLoc === 'abem') {
+      farmTruckloads = Math.ceil(totalEggs / s.truckEggCapacity);
+      farmLogistics = farmTruckloads * s.logisticsFarmToBreaker;
+    } else {
       tankerCount = Math.ceil(totalLiquidLbs / s.tankerLbsCapacity);
       breakerToPlantLogistics = tankerCount * s.logisticsBreakerToPlant;
     }
     const totalLogistics = farmLogistics + breakerToPlantLogistics;
-    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics + sugarCost + sodiumSulfateCost;
+    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics + sulfateDilutionCost + sodiumSulfateCost;
     const costPerLb = totalFinishedProduct > 0 ? totalCost / totalFinishedProduct : 0;
 
     // Phase totals: drying phase carries every cost except sodium sulfate (which is added
     // during coating). Useful for cash-flow planning since drying-phase burn is much heavier.
-    const dryingPhaseTotal = dryingPhaseCost + birdCost + inoculantCost + breakingCost + totalLogistics + sugarCost;
+    const dryingPhaseTotal = dryingPhaseCost + birdCost + inoculantCost + breakingCost + totalLogistics + sulfateDilutionCost;
     const coatingPhaseTotal = coatingPhaseCost + sodiumSulfateCost;
 
     // Dryer cap derived from Glatt water-removal rate, schedule, feed water fraction, and break
-    // location. External breaker rounds down to whole tankers.
-    const dryerHrsPerWeek = 24 * days * (s.dryerEfficiency / 100);
+    // location. External breaker rounds down to whole tankers. Startup/cleanup hours (one-time,
+    // campaign-level) are amortized across drying weeks.
+    const dryerHrsPerWeek = (24 * days * dryingWeeks * (s.dryerEfficiency / 100) - startupCleanupHrs) / dryingWeeks;
     const waterCapPerWeek = dryerHrsPerWeek * s.glattWaterRate;
     let dryerLiquidCapacity = waterCapPerWeek / waterFraction;
     if (s.breakLoc === 'external') {
@@ -582,7 +609,9 @@
     const dryerUtil = liquidLbsPerWeek / dryerLiquidCapacity;
     const glattRequired = wholeEqHTAfterCoating / coatingWeeks;
     const glattUtil = glattRequired / glattCapacityPerWeek;
-    const breakerHrsNeeded = eggsPerWeek / s.breakerEggsPerHr;
+    // Breaker effective rate: max throughput × efficiency (e.g. 26 pallets realistic vs 30 max).
+    const breakerEffectiveRate = s.breakerEggsPerHr * ((s.breakerEfficiency || 100) / 100);
+    const breakerHrsNeeded = eggsPerWeek / breakerEffectiveRate;
     const breakerOK = s.breakLoc === 'abem' ? breakerHrsNeeded <= abemHrsAvailable : true;
 
     const revenue = totalFinishedProduct * s.pricingPerLb;
@@ -592,7 +621,7 @@
       eggsPerDay, eggsPerWeek, totalEggs,
       liquidLbsPerWeek, totalLiquidLbs,
       solidsPerWeek, totalCosabody,
-      dilutedSolidsPerWeek, dilutedCosabody, sugarAdded, sugarCost,
+      dilutedSolidsPerWeek, dilutedCosabodyPerWeek, dilutedCosabody, sulfateDilutionAdded, sulfateDilutionCost,
       htBase, htAfterCoating, cosabodyRemaining, totalFinishedProduct,
       sodiumSulfateAdded, sodiumSulfateCost,
       eggMass, solidsPct, dryingWeeks, coatingWeeks, plantWeeks,
@@ -669,7 +698,7 @@
   }
 
   function renderBreakdown(c) {
-    const rawMaterials = c.sugarCost + c.sodiumSulfateCost;
+    const rawMaterials = c.sulfateDilutionCost + c.sodiumSulfateCost;
     const items = [
       { label: 'Raw eggs', value: c.birdCost, color: '#75C147' },
       { label: 'Inoculant', value: c.inoculantCost, color: '#10A040' },
@@ -702,11 +731,15 @@
     foot += `Inoculant = $${state.inoculantPerBird.toFixed(3)}/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
     foot += (state.breakLoc === 'abem' ? 'AbEM' : 'External') + ` breaking = ${c.breakingDetail}. `;
     const rawParts = [];
-    if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
-    if (c.sugarCost > 0) rawParts.push(`sugar ${fmt.numKM(c.sugarAdded)} lbs × $${state.sugarCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sugarCost)}`);
+    if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate (encap) ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
+    if (c.sulfateDilutionCost > 0) rawParts.push(`sodium sulfate (dilution) ${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}`);
     if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
-    foot += `Logistics = ${c.farmTruckloads} farm-pickup truckloads`;
-    if (state.breakLoc === 'external') foot += ` + ${c.tankerCount} tankers breaker to plant`;
+    foot += `Logistics = `;
+    if (state.breakLoc === 'abem') {
+      foot += `${c.farmTruckloads} farm-pickup truckloads`;
+    } else {
+      foot += `${c.tankerCount} tankers farm/breaker to AbEM`;
+    }
     foot += `. Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks. Note: lab fees and miscellaneous consumables not included; could add up to $0.10/lb.`;
     document.getElementById('footnote').textContent = foot;
   }
@@ -722,7 +755,7 @@
         <div class="phase-segment phase-drying" style="flex: ${c.dryingWeeks};">
           <div class="phase-name">Drying · ${c.dryingWeeks} weeks${dryBadge}</div>
           <div class="phase-total"><span class="phase-total-label">Total Phase Cost:</span> ${fmt.moneyKM(c.dryingPhaseTotal)}</div>
-          <div class="phase-meta">${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sugarCost > 0 ? ' + sugar' : ''}</div>
+          <div class="phase-meta">${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sulfateDilutionCost > 0 ? ' + sulfate (dilution)' : ''}</div>
         </div>
         <div class="phase-segment phase-coating" style="flex: ${c.coatingWeeks};">
           <div class="phase-name">Coating · ${c.coatingWeeks} weeks${coatBadge}</div>
@@ -744,7 +777,7 @@
       <div class="stat-row"><span>Eggs / week</span><strong>${fmt.numKM(c.eggsPerWeek)}</strong></div>
       <div class="stat-row"><span>Solids % (auto)</span><strong>${c.solidsPct.toFixed(1)}%</strong></div>
       <div class="stat-row"><span>Liquid / week</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs <span class="subtle">(${(c.liquidLbsPerWeek/state.tankerLbsCapacity).toFixed(2)} tanker equiv)</span></strong></div>
-      <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.dilutedSolidsPerWeek)} lbs</strong></div>
+      <div class="stat-row"><span>Base Cosabody / week</span><strong>${fmt.numKM(c.dilutedCosabodyPerWeek)} lbs</strong></div>
       <div class="stat-row"><span>Drying weeks</span><strong>${c.dryingWeeks} wk</strong></div>
       <div class="stat-row"><span>Coating weeks</span><strong>${c.coatingWeeks} wk</strong></div>
       <div class="stat-row"><span>Plant operating weeks</span><strong>${c.plantWeeks} wk</strong></div>
@@ -782,19 +815,21 @@
     const html = `
       <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)} <span class="subtle">(${fmt.numKM(dozens)} dozen)</span></strong></div>
       <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
-      <div class="stat-row"><span>Sugar added (dilution)</span><strong>${fmt.numKM(c.sugarAdded)} lbs</strong></div>
-      <div class="stat-row"><span>Sodium sulfate added (${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Sodium sulfate added (dilution)</span><strong>${fmt.numKM(c.sulfateDilutionAdded)} lbs</strong></div>
+      <div class="stat-row"><span>Sodium sulfate added (encap, ${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
     `;
     document.getElementById('materials-detail').innerHTML = html;
   }
 
   function renderOutputDetail(c) {
-    const truckRow = `<div class="stat-row"><span>Egg trucks</span><strong>${c.farmTruckloads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.farmLogistics)}</strong></div>`;
-    const tankerRow = state.breakLoc === 'external'
-      ? `<div class="stat-row"><span>Tankers (breaker to plant)</span><strong>${c.tankerCount} × ${fmt.moneyKM(state.logisticsBreakerToPlant)} = ${fmt.moneyKM(c.breakerToPlantLogistics)}</strong></div>`
+    const truckRow = state.breakLoc === 'abem'
+      ? `<div class="stat-row"><span>Egg trucks (farm to plant)</span><strong>${c.farmTruckloads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.farmLogistics)}</strong></div>`
       : '';
-    const sulfateRow = `<div class="stat-row"><span>Sodium sulfate</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}</strong></div>`;
-    const sugarRow = `<div class="stat-row"><span>Sugar</span><strong>${fmt.numKM(c.sugarAdded)} lbs × $${state.sugarCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sugarCost)}</strong></div>`;
+    const tankerRow = state.breakLoc === 'external'
+      ? `<div class="stat-row"><span>Tankers (farm/breaker to AbEM)</span><strong>${c.tankerCount} × ${fmt.moneyKM(state.logisticsBreakerToPlant)} = ${fmt.moneyKM(c.breakerToPlantLogistics)}</strong></div>`
+      : '';
+    const sulfateEncapRow = `<div class="stat-row"><span>Sodium sulfate (encap)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}</strong></div>`;
+    const sulfateDilutionRow = `<div class="stat-row"><span>Sodium sulfate (dilution)</span><strong>${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}</strong></div>`;
     const html = `
       <div class="stat-row"><span>Total campaign cost</span><strong>${fmt.moneyKM(c.totalCost)}</strong></div>
       <div class="stat-row"><span>Cost per lb finished</span><strong>$${c.costPerLb.toFixed(2)}</strong></div>
@@ -803,8 +838,8 @@
       <div class="stat-row"><span>Margin per lb</span><strong>$${(state.pricingPerLb - c.costPerLb).toFixed(2)}</strong></div>
       ${truckRow}
       ${tankerRow}
-      ${sulfateRow}
-      ${sugarRow}
+      ${sulfateEncapRow}
+      ${sulfateDilutionRow}
     `;
     document.getElementById('output-detail').innerHTML = html;
   }
@@ -813,16 +848,20 @@
     const stages = [];
     const eggsPerWk = c.eggsPerWeek;
 
-    // Stage 1: Egg trucks (farm pickup, full-truck only)
-    const truckCapPer = state.truckEggCapacity;
-    const trucksPerWk = Math.ceil(eggsPerWk / truckCapPer);
-    const truckCap = trucksPerWk * truckCapPer;
-    stages.push({
-      label: `Egg trucks (${trucksPerWk} × ${fmt.numKM(truckCapPer)})`,
-      need: `${fmt.numKM(eggsPerWk)} eggs`,
-      cap: `${fmt.numKM(truckCap)} eggs`,
-      util: eggsPerWk / truckCap,
-    });
+    // Stage 1: Egg trucks (farm pickup, full-truck only). Only applies when breaking
+    // happens at the plant (AbEM). With external breaking, the farm IS the breaker,
+    // so there is no farm-to-breaker egg transport step.
+    if (state.breakLoc === 'abem') {
+      const truckCapPer = state.truckEggCapacity;
+      const trucksPerWk = Math.ceil(eggsPerWk / truckCapPer);
+      const truckCap = trucksPerWk * truckCapPer;
+      stages.push({
+        label: `Egg trucks (${trucksPerWk} × ${fmt.numKM(truckCapPer)})`,
+        need: `${fmt.numKM(eggsPerWk)} eggs`,
+        cap: `${fmt.numKM(truckCap)} eggs`,
+        util: eggsPerWk / truckCap,
+      });
+    }
 
     // Stage 2: Breaker
     if (state.breakLoc === 'abem') {
@@ -992,15 +1031,15 @@
   // pricing) stay where the user left them so price/input sensitivity still applies.
   const presets = {
     breakeven: {
-      flockSize: 200000, breakLoc: 'abem', dryerSchedule: '24-5',
+      flockSize: 175000, breakLoc: 'external', dryerSchedule: '24-6',
       eggType: 'whole', htSplitPct: 80,
     },
-    aggressive: {
-      flockSize: 220000, breakLoc: 'abem', dryerSchedule: '24-6',
-      eggType: 'whole', htSplitPct: 85,
+    realistic: {
+      flockSize: 200000, breakLoc: 'external', dryerSchedule: '24-6',
+      eggType: 'whole', htSplitPct: 80,
     },
     maximum: {
-      flockSize: 286000, breakLoc: 'abem', dryerSchedule: '24-6',
+      flockSize: 220000, breakLoc: 'external', dryerSchedule: '24-6',
       eggType: 'whole', htSplitPct: 90,
     },
   };
@@ -1044,7 +1083,7 @@
   document.getElementById('reset-assumptions-btn').addEventListener('click', resetAssumptions);
 
   renderAssumptions();
-  applyPreset('breakeven');
+  applyPreset('realistic');
 </script>
 </body>
 </html>
