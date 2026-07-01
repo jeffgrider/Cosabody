@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosabody 2.0 — Path to Equivalency</title>
+<style>
+  :root{
+    --bg:#f6f7f8;
+    --panel:#ffffff;
+    --ink:#1b2733;
+    --muted:#5d6b79;
+    --faint:#8a97a3;
+    --grid:#e5e9ed;
+    --grid-strong:#d3d9df;
+    --proof:#2b6a7f;
+    --reg:#4a5a8a;
+    --commercial:#a9762f;
+    --data:#5f7a52;
+    --now:#c0392b;
+    --radius:5px;
+    --lab:280px;
+    --colmin:34px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .mono{font-family:"SFMono-Regular",ui-monospace,"Menlo","Consolas",monospace;
+    font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 64px;}
+
+  header.top{margin-bottom:22px;}
+  .kicker{font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--proof);margin:0 0 6px;}
+  h1{font-size:26px;font-weight:650;line-height:1.15;margin:0 0 8px;letter-spacing:-0.01em;}
+  .meta{font-size:13px;color:var(--muted);line-height:1.5;max-width:70ch;margin:0;}
+  .meta b{color:var(--ink);font-weight:600;}
+
+  .strips{display:flex;flex-wrap:wrap;gap:14px;margin:20px 0 8px;align-items:stretch;}
+  .card{background:var(--panel);border:1px solid var(--grid);border-radius:var(--radius);
+    padding:14px 16px;}
+  .card h2{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+    color:var(--faint);margin:0 0 10px;}
+
+  /* cost panel */
+  .cost{flex:1 1 340px;}
+  .cost .headline{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+  .cost .headline .num{font-size:24px;font-weight:600;}
+  .cost .headline .cap{font-size:12px;color:var(--muted);}
+  .toggle{display:inline-flex;border:1px solid var(--grid-strong);border-radius:6px;overflow:hidden;margin-bottom:12px;}
+  .toggle button{appearance:none;border:0;background:var(--panel);color:var(--muted);
+    font:inherit;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;transition:background .12s,color .12s;}
+  .toggle button+button{border-left:1px solid var(--grid-strong);}
+  .toggle button[aria-pressed="true"]{background:var(--proof);color:#fff;}
+  .cost table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .cost td{padding:4px 0;color:var(--muted);vertical-align:baseline;}
+  .cost td.v{text-align:right;color:var(--ink);font-weight:500;white-space:nowrap;}
+  .cost tr.sum td{border-top:1px solid var(--grid);padding-top:8px;color:var(--ink);font-weight:600;}
+  .cost .tbdnote{font-size:11.5px;color:var(--faint);margin:10px 0 0;line-height:1.45;}
+
+  /* legend */
+  .legend{flex:0 1 300px;}
+  .legend ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;}
+  .legend li{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);}
+  .swatch{width:16px;height:11px;border-radius:2px;flex:0 0 auto;}
+  .swatch.proof{background:var(--proof);}
+  .swatch.reg{background:var(--reg);}
+  .swatch.commercial{background:var(--commercial);border:1px dashed #7c561f;background:repeating-linear-gradient(45deg,var(--commercial),var(--commercial) 3px,#c79553 3px,#c79553 6px);}
+  .swatch.data{background:var(--data);}
+  .swatch.ms{width:11px;height:11px;background:var(--ink);transform:rotate(45deg);border-radius:1px;}
+
+  /* chart */
+  .chartcard{margin-top:16px;padding:0;overflow:hidden;}
+  .scroll{overflow-x:auto;}
+  .chart{min-width:900px;}
+
+  .axis-month,.axis-week{display:grid;grid-template-columns:var(--lab) repeat(20,minmax(var(--colmin),1fr));}
+  .axis-month{border-bottom:1px solid var(--grid);}
+  .axis-week{border-bottom:1px solid var(--grid-strong);position:sticky;top:0;background:var(--panel);z-index:3;}
+  .axis-corner{padding:10px 14px;display:flex;align-items:flex-end;font-size:11px;font-weight:600;
+    letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);}
+  .mon-band{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);
+    padding:8px 0 6px;text-align:center;border-left:1px solid var(--grid);}
+  .wk{padding:6px 0 7px;text-align:center;border-left:1px solid var(--grid);}
+  .wk .n{display:block;font-size:11px;font-weight:600;color:var(--ink);}
+  .wk .d{display:block;font-size:9.5px;color:var(--faint);margin-top:1px;}
+
+  .row{display:grid;grid-template-columns:var(--lab) 1fr;border-bottom:1px solid var(--grid);}
+  .row:hover .rlabel{background:#f0f4f6;}
+  .rlabel{padding:9px 14px;display:flex;flex-direction:column;gap:2px;background:var(--panel);
+    position:sticky;left:0;z-index:2;border-right:1px solid var(--grid-strong);}
+  .rlabel .nm{font-size:13px;font-weight:550;line-height:1.25;}
+  .rlabel .sub{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;}
+  .rlabel .sub .c{color:var(--ink);font-weight:600;}
+  .track{position:relative;display:grid;grid-template-columns:repeat(20,minmax(var(--colmin),1fr));
+    align-items:center;background:
+      repeating-linear-gradient(to right,transparent,transparent calc((100% ) / 20 - 1px),var(--grid) calc(100%/20 - 1px),var(--grid) calc(100%/20));}
+  .bar{grid-row:1;height:17px;border-radius:3px;position:relative;cursor:default;
+    display:flex;align-items:center;transition:filter .12s;outline:none;}
+  .bar:hover,.bar:focus-visible{filter:brightness(1.08);box-shadow:0 0 0 2px rgba(27,39,51,.18);}
+  .bar.proof{background:var(--proof);}
+  .bar.reg{background:var(--reg);}
+  .bar.data{background:var(--data);}
+  .bar.commercial{background:repeating-linear-gradient(45deg,var(--commercial),var(--commercial) 4px,#c08b45 4px,#c08b45 8px);}
+  .bar .costtag{position:absolute;left:calc(100% + 7px);white-space:nowrap;font-size:10.5px;
+    color:var(--muted);font-weight:600;}
+
+  .msrow{display:grid;grid-template-columns:var(--lab) 1fr;border-bottom:1px solid var(--grid);background:#fafbfc;}
+  .msrow .rlabel{background:#fafbfc;}
+  .msrow .rlabel .nm{font-weight:650;}
+  .mstrack{position:relative;display:grid;grid-template-columns:repeat(20,minmax(var(--colmin),1fr));align-items:center;}
+  .diamond{grid-row:1;width:13px;height:13px;background:var(--ink);transform:rotate(45deg);
+    border-radius:2px;justify-self:center;cursor:default;outline:none;position:relative;}
+  .diamond:hover,.diamond:focus-visible{box-shadow:0 0 0 3px rgba(27,39,51,.16);}
+
+  .nowline{position:absolute;top:0;bottom:0;width:2px;background:var(--now);opacity:.55;z-index:1;pointer-events:none;}
+  .nowlabel{position:absolute;top:2px;font-size:9px;font-weight:700;color:var(--now);letter-spacing:.05em;transform:translateX(-50%);}
+
+  /* tooltip */
+  #tip{position:fixed;z-index:50;max-width:280px;background:var(--ink);color:#eef2f5;
+    border-radius:6px;padding:10px 12px;font-size:12px;line-height:1.45;pointer-events:none;
+    opacity:0;transition:opacity .1s;box-shadow:0 6px 22px rgba(0,0,0,.22);}
+  #tip .tnm{font-weight:650;font-size:12.5px;margin-bottom:3px;}
+  #tip .trow{color:#aebac6;}
+  #tip .trow b{color:#fff;font-weight:600;}
+  #tip .tnote{margin-top:6px;color:#c4cdd6;font-size:11.5px;}
+
+  .foot{margin-top:16px;font-size:11.5px;color:var(--faint);line-height:1.5;}
+
+  @media (max-width:640px){
+    :root{--lab:180px;}
+    .wrap{padding:22px 12px 48px;}
+    h1{font-size:21px;}
+    .legend ul{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">Cosabody 2.0 · Phase 0</p>
+    <h1>Path to Equivalency</h1>
+    <p class="meta">Best-case schedule. <b>Week 1 = Monday, June 29, 2026</b>; weeks run Monday to Friday, all dates 2026. Proof path plus regulatory workstreams, with the commercial track shown off the equivalency critical path. Costs are known tagged estimates; TBD lines are not yet priced.</p>
+  </header>
+
+  <div class="strips">
+    <section class="card cost" aria-label="Cost reconciliation">
+      <h2>Cost reconciliation</h2>
+      <div class="headline">
+        <span class="num mono" id="totalNum">$145-255K</span>
+        <span class="cap">known tagged cost, across 3-4 studies</span>
+      </div>
+      <div class="toggle" role="group" aria-label="Number of equivalency studies">
+        <button id="b3" aria-pressed="false">3 studies</button>
+        <button id="b4" aria-pressed="false">4 studies</button>
+      </div>
+      <table>
+        <tr><td>Fixed floor <span style="color:var(--faint)">(CDMO, dossier, ELISA)</span></td><td class="v mono">$85-95K</td></tr>
+        <tr><td>&nbsp;&nbsp;CDMO fermentation</td><td class="v mono">$50-60K</td></tr>
+        <tr><td>&nbsp;&nbsp;Self-GRAS dossier</td><td class="v mono">$25K</td></tr>
+        <tr><td>&nbsp;&nbsp;ELISA validation</td><td class="v mono">$10K</td></tr>
+        <tr><td>Equivalency battery <span id="battMult" style="color:var(--faint)">(3-4 &times; $20-40K)</span></td><td class="v mono" id="battVal">$60-160K</td></tr>
+        <tr class="sum"><td>Total known</td><td class="v mono" id="sumVal">$145-255K</td></tr>
+      </table>
+      <p class="tbdnote">TBD (unpriced): Review 1.0 GRAS, equivalency study design, facility booking, GRAS safety scope, tote-scale material, full Glatt trial. Any net-new safety studies fall under the safety-scope line and are TBD pending Kristi's scope.</p>
+    </section>
+
+    <section class="card legend" aria-label="Legend">
+      <h2>Tracks</h2>
+      <ul>
+        <li><span class="swatch proof"></span>Proof path</li>
+        <li><span class="swatch reg"></span>Regulatory</li>
+        <li><span class="swatch commercial"></span>Commercial (off path)</li>
+        <li><span class="swatch data"></span>Data / analysis</li>
+        <li><span class="swatch ms"></span>Milestone</li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card chartcard" aria-label="Gantt chart">
+    <div class="scroll">
+      <div class="chart" id="chart"></div>
+    </div>
+  </section>
+
+  <p class="foot">Milestones: Bench-phase go/no-go (W8, Aug 21) · First equivalency study starts (W11, Sep 7) · Equivalency Report (W17, Oct 23) · Pathway to equivalency complete / Self-GRAS submitted (W20, Nov 13). The Nov 13 completion carries a deliberate trial buffer.</p>
+</div>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+  var anchor = new Date(2026,5,29); // Mon Jun 29 2026
+  var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function monday(w){ var d=new Date(anchor); d.setDate(d.getDate()+(w-1)*7); return d; }
+  function friday(w){ var d=monday(w); d.setDate(d.getDate()+4); return d; }
+  function fmt(d){ return M[d.getMonth()]+" "+d.getDate(); }
+  function span(s,e){ return fmt(monday(s))+" \u2013 "+fmt(friday(e)); }
+
+  var tasks=[
+    {nm:"CDMO fermentation",own:"Pradyut + CDMO",cost:"$50-60K",trk:"proof",s:1,e:4,
+      note:"Scale-up: process optimization, SOP, pilot/microscale, then medium-scale to ~30L."},
+    {nm:"Data retrieval + meta-analysis",own:"Jordan + Jeff + Bill",cost:"Internal",trk:"data",s:1,e:4,
+      note:"Synthesize existing university and commercial trial data into a meta-analysis."},
+    {nm:"Review 1.0 GRAS submission",own:"Kristi + Pradyut + Jordan",cost:"TBD",trk:"reg",s:2,e:3,
+      note:"Reuse precedent; confirm the SRIS (K-State) self-GRAS pathway mapped with Kristi."},
+    {nm:"Equivalency study design",own:"Jordan + Pradyut",cost:"TBD",trk:"proof",s:3,e:5,
+      note:"Protocol, endpoints, sample size. 2.0 vs 1.0 in egg, ~20 pens/treatment, ~28 days, 10x cocci challenge day 3. Dose arms are the titration."},
+    {nm:"Equivalency facility booking",own:"Jordan + Jeff",cost:"TBD",trk:"proof",s:4,e:6,
+      note:"Secure controlled battery-cage capacity (facility or CRO) and book. Not producer field trials."},
+    {nm:"Regulatory / GRAS safety scope",own:"Kristi + Pradyut + Jordan",cost:"TBD",trk:"reg",s:4,e:8,
+      note:"Net-new safety work 2.0 needs, given 1.0's GRAS (same target, same MOA) and equivalency data."},
+    {nm:"Self-GRAS dossier",own:"Kristi",cost:"$25K",trk:"reg",s:4,e:17,
+      note:"Scope, draft, and assemble the dossier on the SRIS self-GRAS pathway."},
+    {nm:"Bench tests",own:"Gil + Pradyut + Jordan + AbEM",cost:"TBD",trk:"proof",s:5,e:6,
+      note:"Dilution, granulation, testing. Screens egg and substrate candidates (soy lecithin, calcium carbonate)."},
+    {nm:"ELISA validation",own:"Pradyut + Jordan + Gil",cost:"$10K",trk:"proof",s:5,e:7,
+      note:"Validate ELISA across fermentate, egg spike, feed. Feed-matrix interference is real and unsolved."},
+    {ms:1,nm:"Bench-phase go/no-go",wk:8,
+      note:"Granulated Cosabody passes bench. Decision on dilution consistency, efficacy, dose."},
+    {nm:"Equivalency material (tote-scale)",own:"Gil + Pradyut + Jordan + AbEM",cost:"TBD",trk:"proof",s:9,e:10,
+      note:"Spike a tote of egg, pasteurize, dry. Meets pasteurizer minimum. Not encapsulated."},
+    {ms:1,nm:"First equivalency study starts",wk:11,
+      note:"First of 3-4 controlled battery-cage studies, 2.0 vs 1.0 in egg. Best-case."},
+    {nm:"Full Glatt granulation / full-scale batch",own:"Gil + Jordan + Pradyut + AbEM",cost:"TBD",trk:"commercial",s:11,e:12,
+      note:"Commercial track. Granulation + Na2SO4 encapsulation, coating series 0-40%, pellet survival. Off the equivalency critical path."},
+    {nm:"Equivalency study battery (3-4 studies)",own:"Jordan + Pradyut + Gil",cost:"$20-40K/study",trk:"proof",s:11,e:16,
+      note:"3-4 controlled battery-cage studies, ~28 days each, in parallel. 2.0 passes if it matches or beats 1.0. Dose arms refine the dose."},
+    {ms:1,nm:"Equivalency Report",wk:17,
+      note:"Indication of 1.0 to 2.0 equivalency or failure."},
+    {nm:"Submission",own:"Kristi",cost:"TBD",trk:"reg",s:18,e:20,
+      note:"Kristi submits the dossier. Required for commercial sale, not for the efficacy trial."},
+    {ms:1,nm:"Pathway to equivalency complete",wk:20,
+      note:"Full-scale encapsulated batch passes efficacy. Self-GRAS submitted. Ready for commercial sale."}
+  ];
+
+  // ---- month + week axes ----
+  var monthOf={}; // week -> month index
+  for(var w=1;w<=20;w++){ monthOf[w]=monday(w).getMonth(); }
+  var monthCells=""; var i=1;
+  while(i<=20){ var m=monthOf[i]; var c=0; var start=i;
+    while(i<=20 && monthOf[i]===m){c++;i++;}
+    monthCells+='<div class="mon-band" style="grid-column-start:'+(start+1)+';grid-column-end:'+(start+1+c)+';">'+M[m]+'</div>';
+  }
+  var weekCells="";
+  for(var w2=1;w2<=20;w2++){
+    var mo=monday(w2);
+    weekCells+='<div class="wk"><span class="n">'+w2+'</span><span class="d mono">'+(mo.getMonth()+1)+'/'+mo.getDate()+'</span></div>';
+  }
+
+  var html='';
+  html+='<div class="axis-month"><div></div>'+monthCells+'</div>';
+  html+='<div class="axis-week"><div class="axis-corner">Workstream</div>'+weekCells+'</div>';
+
+  tasks.forEach(function(t){
+    if(t.ms){
+      html+='<div class="msrow"><div class="rlabel"><span class="nm">'+t.nm+'</span>'+
+        '<span class="sub mono">W'+t.wk+' \u00b7 '+fmt(friday(t.wk))+'</span></div>'+
+        '<div class="mstrack">'+
+        '<span class="diamond" style="grid-column:'+t.wk+'" tabindex="0" '+
+          'data-nm="'+esc(t.nm)+'" data-when="W'+t.wk+' \u00b7 '+fmt(friday(t.wk))+'" data-ms="1" '+
+          'data-note="'+esc(t.note)+'"></span>'+
+        nowMarker()+'</div></div>';
+    } else {
+      html+='<div class="row"><div class="rlabel"><span class="nm">'+t.nm+'</span>'+
+        '<span class="sub">'+t.own+' <span class="c">'+t.cost+'</span></span></div>'+
+        '<div class="track">'+
+        '<span class="bar '+t.trk+'" style="grid-column:'+t.s+' / '+(t.e+1)+'" tabindex="0" '+
+          'data-nm="'+esc(t.nm)+'" data-when="'+esc("W"+t.s+"-"+t.e+"  \u00b7  "+span(t.s,t.e))+'" '+
+          'data-own="'+esc(t.own)+'" data-cost="'+esc(t.cost)+'" data-note="'+esc(t.note)+'">'+
+          '<span class="costtag mono">'+(t.cost!=="TBD"&&t.cost!=="Internal"?t.cost:"")+'</span></span>'+
+        nowMarker()+'</div></div>';
+    }
+  });
+  document.getElementById("chart").innerHTML=html;
+
+  function nowMarker(){
+    // Jun 30 2026 sits inside week 1. Position at ~ (dayOffset/7) across column 1 of 20.
+    var now=new Date(2026,5,30);
+    var days=(now-anchor)/(1000*60*60*24); // days since Mon of W1
+    var frac=(days/7); // fraction of a week into W1
+    var pct=((0+frac)/20)*100;
+    return '<div class="nowline" style="left:'+pct+'%"><span class="nowlabel">now</span></div>';
+  }
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  // ---- tooltip ----
+  var tip=document.getElementById("tip");
+  function show(el,evt){
+    var nm=el.getAttribute("data-nm");
+    var h='<div class="tnm">'+nm+'</div>';
+    h+='<div class="trow"><b>'+el.getAttribute("data-when")+'</b></div>';
+    if(el.getAttribute("data-own")) h+='<div class="trow">'+el.getAttribute("data-own")+'</div>';
+    var cost=el.getAttribute("data-cost");
+    if(cost) h+='<div class="trow">Cost: <b>'+cost+'</b></div>';
+    if(el.getAttribute("data-ms")) h+='<div class="trow"><b>Milestone</b></div>';
+    h+='<div class="tnote">'+el.getAttribute("data-note")+'</div>';
+    tip.innerHTML=h; tip.style.opacity="1"; place(evt);
+  }
+  function place(evt){
+    var pad=14, tw=tip.offsetWidth, th=tip.offsetHeight;
+    var x=(evt.clientX||0)+pad, y=(evt.clientY||0)+pad;
+    if(x+tw>window.innerWidth-8) x=(evt.clientX||0)-tw-pad;
+    if(y+th>window.innerHeight-8) y=(evt.clientY||0)-th-pad;
+    tip.style.left=x+"px"; tip.style.top=y+"px";
+  }
+  function hide(){ tip.style.opacity="0"; }
+  var targets=document.querySelectorAll(".bar,.diamond");
+  targets.forEach(function(el){
+    el.addEventListener("mouseenter",function(e){show(el,e);});
+    el.addEventListener("mousemove",place);
+    el.addEventListener("mouseleave",hide);
+    el.addEventListener("focus",function(e){
+      var r=el.getBoundingClientRect();
+      show(el,{clientX:r.left+r.width/2,clientY:r.top+r.height/2});
+    });
+    el.addEventListener("blur",hide);
+  });
+
+  // ---- cost toggle ----
+  var b3=document.getElementById("b3"), b4=document.getElementById("b4");
+  function setStudies(n){
+    var battLo=n*20, battHi=n*40;
+    var totLo=85+battLo, totHi=95+battHi;
+    document.getElementById("battMult").innerHTML=n+" &times; $20-40K";
+    document.getElementById("battVal").textContent="$"+battLo+"-"+battHi+"K";
+    document.getElementById("sumVal").textContent="$"+totLo+"-"+totHi+"K";
+    document.getElementById("totalNum").textContent="$"+totLo+"-"+totHi+"K";
+    document.querySelector(".cost .headline .cap").textContent="known tagged cost, "+n+" studies";
+    b3.setAttribute("aria-pressed", n===3?"true":"false");
+    b4.setAttribute("aria-pressed", n===4?"true":"false");
+  }
+  function resetView(){
+    b3.setAttribute("aria-pressed","false"); b4.setAttribute("aria-pressed","false");
+    document.getElementById("battMult").innerHTML="(3-4 &times; $20-40K)";
+    document.getElementById("battVal").textContent="$60-160K";
+    document.getElementById("sumVal").textContent="$145-255K";
+    document.getElementById("totalNum").textContent="$145-255K";
+    document.querySelector(".cost .headline .cap").textContent="known tagged cost, across 3-4 studies";
+  }
+  b3.addEventListener("click",function(){ if(b3.getAttribute("aria-pressed")==="true"){resetView();} else setStudies(3); });
+  b4.addEventListener("click",function(){ if(b4.getAttribute("aria-pressed")==="true"){resetView();} else setStudies(4); });
+})();
+</script>
+</body>
+</html>
