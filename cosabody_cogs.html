@@ -107,7 +107,7 @@
   .bn-util.red { color: var(--warn); }
   .bn-util.info { color: var(--gray-mid); }
   .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
-  @media (max-width: 1080px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(10, auto); } }
+  @media (max-width: 1080px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(11, auto); } }
   .cadence-head { font-size: 11px; font-weight: 600; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.4px; margin: 10px 0 2px; padding-top: 8px; border-top: 1px solid #E8E8E8; }
   @media (max-width: 720px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
   .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
@@ -269,7 +269,7 @@
     dryerSchedule: '24-5',
     flockSize: 200000,
     layRate: 82,
-    layWeeks: 16,
+    layWeeks: 20,
     eggMassWhole: 50,
     solidsWhole: 24.5,
     moistureRetention: 1.7,
@@ -281,6 +281,7 @@
     breakingWagePerHead: 25,
     eggCostPerDozen: 0.75,
     logisticsFarmToBreaker: 1000,
+    truckEggCapacity: 259200,
     pricingPerLb: 6.00,
     htSplitPct: 60,
     sulfateDilutionPct: 0,
@@ -301,7 +302,7 @@
 
   // Snapshot of factory defaults for the Reset button (only the editable assumption keys).
   const ASSUMPTION_DEFAULTS = {
-    layRate: 82, layWeeks: 16,
+    layRate: 82, layWeeks: 20,
     eggMassWhole: 50,
     solidsWhole: 24.5,
     moistureRetention: 1.7,
@@ -314,6 +315,7 @@
     breakerCount: 2, breakerCapex: 20000,
     breakingCrewSize: 4,
     logisticsFarmToBreaker: 1000,
+    truckEggCapacity: 259200,
   };
 
   // Defaults for the cost/input sliders. Restored on every Quick scenario click so
@@ -344,7 +346,8 @@
     { key: 'breakerCapex', label: 'Breaker capex (1×)', unit: '$', step: 1000, min: 0, max: 200000 },
     { key: 'breakerEggsPerHr', label: 'Breaker rate/machine', unit: 'eggs/hr', step: 1000, min: 5000, max: 60000 },
     { key: 'breakerEfficiency', label: 'Breaker efficiency', unit: '%', step: 1, min: 50, max: 100 },
-    { key: 'logisticsFarmToBreaker', label: 'Truck load (2 wk eggs)', unit: '$/load', step: 50, min: 0, max: 3000 },
+    { key: 'logisticsFarmToBreaker', label: 'Reefer load', unit: '$/load', step: 50, min: 0, max: 5000 },
+    { key: 'truckEggCapacity', label: 'Eggs per reefer', unit: 'eggs', step: 5000, min: 100000, max: 400000 },
   ];
 
   const flockSliders = [
@@ -527,9 +530,10 @@
     const breakingCost = breakingLabor + s.breakerCapex;
     const breakingDetail = `${totalBreakingHrs.toFixed(0)} breaker-hrs (${fmt.numKM(totalEggs)} eggs ÷ ${fmt.numKM(effectiveRate)}/hr, ${s.breakerCount}× UDTJ-150 cycled) × ${s.breakingCrewSize} crew @ $${s.breakingWagePerHead}/hr = ${fmt.moneyKM(breakingLabor)} labor + ${fmt.moneyKM(s.breakerCapex)} capex`;
 
-    // Logistics: shell eggs trucked farm to AbEM, one load per two laying weeks (one load =
-    // one batch), at the per-load rate.
-    const truckLoads = batches;
+    // Logistics: shell eggs trucked farm to AbEM in full refrigerated semis. A reefer holds
+    // ~259,200 eggs (720 cases × 360), so at 100K/82% (~82,000 eggs/day) a load fills in
+    // about 3 days and the campaign runs ~4-5 loads per two-week batch.
+    const truckLoads = Math.max(1, Math.ceil(totalEggs / s.truckEggCapacity));
     const totalLogistics = truckLoads * s.logisticsFarmToBreaker;
     const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics + sulfateDilutionCost + sodiumSulfateCost;
     const costPerLb = totalFinishedProduct > 0 ? totalCost / totalFinishedProduct : 0;
@@ -677,7 +681,7 @@
     if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate (encap) ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
     if (c.sulfateDilutionCost > 0) rawParts.push(`sodium sulfate (dilution) ${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}`);
     if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
-    foot += `Logistics = ${c.truckLoads} truck loads (1 per 2 wk lay) × ${fmt.moneyKM(state.logisticsFarmToBreaker)}. `;
+    foot += `Logistics = ${c.truckLoads} reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each) × ${fmt.moneyKM(state.logisticsFarmToBreaker)}. `;
     foot += `Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks. Note: lab fees and miscellaneous consumables not included; could add up to $0.10/lb.`;
     document.getElementById('footnote').textContent = foot;
   }
@@ -727,6 +731,7 @@
 
       <div class="cadence-head">Cadence · collect 2 wk → dry 1 wk → coat 1 wk</div>
       <div class="stat-row"><span>1 batch = 2 laying weeks</span><strong>${fmt.numKM(eggsPerBatch)} eggs · ${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid</strong></div>
+      <div class="stat-row"><span>Reefer deliveries / batch (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${(eggsPerBatch / state.truckEggCapacity).toFixed(1)} loads</strong></div>
       <div class="stat-row"><span>Break + dry that batch: 1 wk @ 24/${daysN}</span><strong>dryer ${dryPct}% of ${fmt.numKM(c.dryerLiquidCapacity)} lbs${dryFlag}</strong></div>
       <div class="stat-row"><span>Coat that batch: 1 wk @ 24/${daysN}</span><strong>encap ${coatPct}% of ${fmt.numKM(c.glattCapacityPerWeek)} lbs${coatFlag}</strong></div>
       <div class="stat-row"><span>Breaker time / batch (${state.breakerCount}× UDTJ-150)</span><strong>${breakHrsPerBatch.toFixed(0)} hr</strong></div>
@@ -769,7 +774,7 @@
   }
 
   function renderOutputDetail(c) {
-    const truckRow = `<div class="stat-row"><span>Egg truck loads (1 per 2 wk lay)</span><strong>${c.truckLoads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.totalLogistics)}</strong></div>`;
+    const truckRow = `<div class="stat-row"><span>Reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${c.truckLoads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.totalLogistics)}</strong></div>`;
     const sulfateEncapRow = `<div class="stat-row"><span>Sodium sulfate (encap)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}</strong></div>`;
     const sulfateDilutionRow = `<div class="stat-row"><span>Sodium sulfate (dilution)</span><strong>${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}</strong></div>`;
     const html = `
