@@ -66,6 +66,8 @@
   .slider-row .value.val-warn { color: #B58200; }
   .slider-row .value.val-danger { color: var(--warn); }
   .slider-row input[type=range] { width: 100%; }
+  .price-equiv { display: flex; gap: 16px; justify-content: flex-end; flex-wrap: wrap; font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--gray-dark); padding: 0 0 6px 0; margin-top: -2px; }
+  .price-equiv span { white-space: nowrap; }
   .headline-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
   @media (max-width: 1080px) { .headline-grid-5 { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 720px) { .headline-grid-5 { grid-template-columns: repeat(2, 1fr); } }
@@ -106,12 +108,14 @@
   .bn-util.yellow { color: #B07000; }
   .bn-util.red { color: var(--warn); }
   .bn-util.info { color: var(--gray-mid); }
-  .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
-  @media (max-width: 1080px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(11, auto); } }
+  .assumptions { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(10, auto); grid-auto-flow: column; gap: 4px 32px; font-size: 13px; }
+  @media (max-width: 1080px) { .assumptions { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(14, auto); } }
   .cadence-head { font-size: 11px; font-weight: 600; color: var(--green-dark); text-transform: uppercase; letter-spacing: 0.4px; margin: 10px 0 2px; padding-top: 8px; border-top: 1px solid #E8E8E8; }
   @media (max-width: 720px) { .assumptions { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; } }
   .ass-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #eee; gap: 12px; min-height: 32px; }
   .ass-row > span.ass-label { color: var(--text); font-weight: 500; }
+  .ass-row.disabled { opacity: 0.45; }
+  .ass-row.disabled input { background: var(--gray-light); cursor: not-allowed; }
   .ass-input { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .ass-input input { width: 80px; padding: 4px 6px; border: 1px solid var(--gray-mid); border-radius: 3px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right; background: white; color: var(--text); }
   .ass-input input:focus { outline: 2px solid var(--green-light); outline-offset: -1px; border-color: var(--green-dark); }
@@ -150,6 +154,7 @@
   .phase-axis .ax-end { margin-left: auto; }
   .presets { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .presets-label { font-size: 13px; color: var(--gray-dark); font-weight: 500; margin-right: 4px; }
+  .preset-divider { width: 1px; align-self: stretch; background: var(--gray-mid); margin: 0 6px; }
   .preset-btn { padding: 9px 18px; border: 2px solid var(--green-dark); background: white; color: var(--green-dark); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; user-select: none; font-family: inherit; }
   .preset-btn:hover { background: var(--green-bg); }
   .preset-btn.active { background: var(--green-dark); color: white; }
@@ -167,6 +172,10 @@
       <button class="preset-btn" data-preset="flock80" type="button">80K</button>
       <button class="preset-btn" data-preset="flock100" type="button">100K</button>
       <button class="preset-btn" data-preset="flock120" type="button">120K</button>
+      <span class="preset-divider"></span>
+      <button class="preset-btn" data-preset="wa69" type="button">WA 69K</button>
+      <span class="preset-divider"></span>
+      <button class="preset-btn" data-preset="mex200" type="button">MX 200K</button>
     </div>
     <div id="warnings" class="warnings-inline"></div>
   </div>
@@ -203,10 +212,31 @@
     <div class="card">
       <h2>Inputs</h2>
       <div class="config-inline">
+        <label>Egg sourcing</label>
+        <div class="toggle-group" id="sourcing-toggle">
+          <div class="toggle active" data-val="domestic">Domestic shell</div>
+          <div class="toggle" data-val="mexico">Mexico liquid totes</div>
+        </div>
+      </div>
+      <div class="config-inline">
         <label>Glatt / Dryer schedule</label>
         <div class="toggle-group" id="dryer-toggle">
           <div class="toggle active" data-val="24-5">5 days</div>
           <div class="toggle" data-val="24-6">6 days</div>
+        </div>
+      </div>
+      <div class="config-inline" id="batch-row">
+        <label>Batch collection window</label>
+        <div class="toggle-group" id="batch-toggle">
+          <div class="toggle active" data-val="2">2 wk</div>
+          <div class="toggle" data-val="3">3 wk</div>
+        </div>
+      </div>
+      <div class="config-inline" id="coatmode-row">
+        <label>Coating schedule</label>
+        <div class="toggle-group" id="coatmode-toggle">
+          <div class="toggle active" data-val="batch">Per batch</div>
+          <div class="toggle" data-val="packed">Packed</div>
         </div>
       </div>
       <div id="flock-sliders"></div>
@@ -251,7 +281,7 @@
   <div class="card stacked">
     <h2>Bottleneck analysis</h2>
     <div id="bottleneck"></div>
-    <div class="footnote">Each batch is two laying weeks of shell eggs, trucked in as one load. The single Glatt breaks and dries that batch in one week, then coats it the next, bouncing between the two modes. Utilization is one batch against a one-week slot: near 100% means it just fits; over 100% (red) means the batch overruns the week and needs the sixth day or a smaller flock.</div>
+    <div class="footnote" id="bottleneck-footnote"></div>
   </div>
 
   <div class="card stacked">
@@ -264,12 +294,18 @@
 </div>
 
 <script>
+  const LBS_PER_KG = 2.20462;
+
   const state = {
     eggType: 'whole',
+    sourcing: 'domestic',
     dryerSchedule: '24-5',
     flockSize: 200000,
     layRate: 82,
     layWeeks: 20,
+    batchCollectWks: '2',
+    coatingMode: 'batch',
+    washCost: 0,
     eggMassWhole: 50,
     solidsWhole: 24.5,
     moistureRetention: 1.7,
@@ -280,8 +316,18 @@
     breakingCrewSize: 4,
     breakingWagePerHead: 25,
     eggCostPerDozen: 0.75,
+    mexEggPricePerDozen: 0.75,
+    marginBufferPct: 10,
+    miscPctOfPlant: 3,
     logisticsFarmToBreaker: 1000,
     truckEggCapacity: 259200,
+    washCost: 0,
+    mexTruckCost: 4000,
+    truckCapacityKg: 19000,
+    toteKg: 950,
+    recoveryLossPct: 0.5,
+    cipIntervalWks: 4,
+    fxUsdMxn: 17.05,
     pricingPerLb: 6.00,
     htSplitPct: 60,
     sulfateDilutionPct: 0,
@@ -302,7 +348,7 @@
 
   // Snapshot of factory defaults for the Reset button (only the editable assumption keys).
   const ASSUMPTION_DEFAULTS = {
-    layRate: 82, layWeeks: 20,
+    layRate: 82,
     eggMassWhole: 50,
     solidsWhole: 24.5,
     moistureRetention: 1.7,
@@ -316,48 +362,79 @@
     breakingCrewSize: 4,
     logisticsFarmToBreaker: 1000,
     truckEggCapacity: 259200,
+    washCost: 0,
+    mexTruckCost: 4000,
+    truckCapacityKg: 19000,
+    toteKg: 950,
+    recoveryLossPct: 0.5,
+    cipIntervalWks: 4,
+    fxUsdMxn: 17.05,
+    miscPctOfPlant: 3,
+    marginBufferPct: 10,
   };
 
   // Defaults for the cost/input sliders. Restored on every Quick scenario click so
   // any user-edited input values snap back to baseline before the preset is applied.
   const INPUT_DEFAULTS = {
+    layWeeks: 20,
+    batchCollectWks: '2',
+    coatingMode: 'batch',
     eggCostPerDozen: 0.75,
+    mexEggPricePerDozen: 0.75,
     pricingPerLb: 6.00,
     sulfateDilutionPct: 0,
   };
 
+  // domOnly rows grey out in Mexico mode (AVIGM breaks at source; shell-egg trucking does
+  // not apply). mexOnly rows grey out in domestic mode.
   const editableAssumptions = [
     { key: 'layRate', label: 'Lay rate', unit: '%', step: 1, min: 50, max: 100 },
-    { key: 'layWeeks', label: 'Lay weeks', unit: 'wk', step: 1, min: 8, max: 30 },
     { key: 'eggMassWhole', label: 'Egg mass', unit: 'g/egg', step: 1, min: 30, max: 70 },
     { key: 'solidsWhole', label: 'Egg solids', unit: '%', step: 0.1, min: 10, max: 50 },
     { key: 'moistureRetention', label: 'Finished moisture', unit: '%', step: 0.1, min: 0, max: 8 },
     { key: 'htEncapsulationRate', label: 'HT encapsulation rate', unit: '%', step: 1, min: 20, max: 70 },
     { key: 'glattWaterRate', label: 'Glatt water removal', unit: 'lbs/hr', step: 25, min: 200, max: 2500 },
     { key: 'dryerEfficiency', label: 'Dryer efficiency', unit: '%', step: 1, min: 50, max: 100 },
-    { key: 'dryerStartupCleanupHrs', label: 'Dryer startup/cleanup', unit: 'hrs', step: 4, min: 0, max: 80 },
+    { key: 'dryerStartupCleanupHrs', label: 'Dryer startup/CIP', unit: 'hrs', step: 4, min: 0, max: 80 },
+    { key: 'cipIntervalWks', label: 'CIP interval (MX)', unit: 'wk', step: 1, min: 1, max: 10, mexOnly: true },
     { key: 'glattEncapPerDay', label: 'Glatt encap rate', unit: 'lbs/day', step: 500, min: 2000, max: 25000 },
     { key: 'plantBaseWeekly', label: 'Plant cost (24/5)', unit: '$/wk', step: 1000, min: 30000, max: 250000 },
     { key: 'plantSixthDayPremium', label: '24/6 plant premium', unit: '$/wk', step: 500, min: 0, max: 30000 },
     { key: 'inoculantPerBird', label: 'Inoculant per bird', unit: '$/bird', step: 0.01, min: 0, max: 5.00 },
+    { key: 'inoculantFixed', label: 'Inoculant fixed', unit: '$', step: 5000, min: 0, max: 500000 },
+    { key: 'washCost', label: 'Egg wash (one-time)', unit: '$', step: 5000, min: 0, max: 200000, domOnly: true },
     { key: 'sodiumSulfateCostPerLb', label: 'Sodium sulfate cost', unit: '$/lb', step: 0.01, min: 0, max: 5.00 },
-    { key: 'breakingCrewSize', label: 'Breaking crew size', unit: 'people', step: 1, min: 1, max: 20 },
-    { key: 'breakerCount', label: 'Breaker machines', unit: 'units', step: 1, min: 1, max: 6 },
-    { key: 'breakerCapex', label: 'Breaker capex (1×)', unit: '$', step: 1000, min: 0, max: 200000 },
-    { key: 'breakerEggsPerHr', label: 'Breaker rate/machine', unit: 'eggs/hr', step: 1000, min: 5000, max: 60000 },
-    { key: 'breakerEfficiency', label: 'Breaker efficiency', unit: '%', step: 1, min: 50, max: 100 },
-    { key: 'logisticsFarmToBreaker', label: 'Reefer load', unit: '$/load', step: 50, min: 0, max: 5000 },
-    { key: 'truckEggCapacity', label: 'Eggs per reefer', unit: 'eggs', step: 5000, min: 100000, max: 400000 },
+    { key: 'breakingCrewSize', label: 'Breaking crew size', unit: 'people', step: 1, min: 1, max: 20, domOnly: true },
+    { key: 'breakerCount', label: 'Breaker machines', unit: 'units', step: 1, min: 1, max: 6, domOnly: true },
+    { key: 'breakerCapex', label: 'Breaker capex (1×)', unit: '$', step: 1000, min: 0, max: 200000, domOnly: true },
+    { key: 'breakerEggsPerHr', label: 'Breaker rate/machine', unit: 'eggs/hr', step: 1000, min: 5000, max: 60000, domOnly: true },
+    { key: 'breakerEfficiency', label: 'Breaker efficiency', unit: '%', step: 1, min: 50, max: 100, domOnly: true },
+    { key: 'logisticsFarmToBreaker', label: 'Reefer load (domestic)', unit: '$/load', step: 50, min: 0, max: 5000, domOnly: true },
+    { key: 'truckEggCapacity', label: 'Eggs per reefer', unit: 'eggs', step: 5000, min: 100000, max: 400000, domOnly: true },
+    { key: 'mexTruckCost', label: 'MX truck, Laredo to AbEM', unit: '$/truck', step: 100, min: 0, max: 10000, mexOnly: true },
+    { key: 'truckCapacityKg', label: 'MX truck capacity', unit: 'kg', step: 500, min: 10000, max: 25000, mexOnly: true },
+    { key: 'toteKg', label: 'MX tote size', unit: 'kg', step: 10, min: 500, max: 1200, mexOnly: true },
+    { key: 'recoveryLossPct', label: 'MX recovery loss', unit: '%', step: 0.1, min: 0, max: 5, mexOnly: true },
+    { key: 'fxUsdMxn', label: 'USD to MXN rate', unit: 'MXN/USD', step: 0.05, min: 10, max: 30, mexOnly: true },
+    { key: 'miscPctOfPlant', label: 'Misc cost, % of plant', unit: '%', step: 0.5, min: 0, max: 10 },
+    { key: 'marginBufferPct', label: 'Margin buffer, max egg price', unit: '%', step: 1, min: 0, max: 30 },
   ];
 
   const flockSliders = [
-    { key: 'flockSize', label: 'Flock size', min: 60000, max: 140000, step: 5000, fmt: 'int', suffix: ' birds' },
+    { key: 'flockSize', label: 'Flock size', min: 60000, max: 250000, step: 1000, fmt: 'int', suffix: ' birds',
+      showWhen: () => state.sourcing === 'domestic' },
+    { key: 'flockSize', label: 'Flock size (AVIGM)', min: 100000, max: 250000, step: 10000, fmt: 'int', suffix: ' birds',
+      showWhen: () => state.sourcing === 'mexico' },
   ];
 
   const plantSliders = [];
 
   const costSliders = [
-    { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.15, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen' },
+    { key: 'layWeeks', label: 'Lay / collection weeks', min: 8, max: 52, step: 1, fmt: 'int', suffix: ' wk' },
+    { key: 'eggCostPerDozen', label: 'Raw eggs $/dozen', min: 0.15, max: 1.25, step: 0.05, fmt: 'money2', suffix: '/dozen',
+      showWhen: () => state.sourcing === 'domestic' },
+    { key: 'mexEggPricePerDozen', label: 'AVIGM eggs $/dozen', min: 0.25, max: 3.00, step: 0.01, fmt: 'money2', suffix: '/dozen',
+      showWhen: () => state.sourcing === 'mexico' },
     { key: 'sulfateDilutionPct', label: 'Sodium sulfate dilution', min: 0, max: 25, step: 1, fmt: 'int', suffix: '%' },
     { key: 'pricingPerLb', label: 'Pricing reference $/lb', min: 4, max: 10, step: 0.10, fmt: 'money2', suffix: '/lb' },
     { key: 'htSplitPct', label: 'HT split %', min: 40, max: 95, step: 5, fmt: 'int', suffix: '%' },
@@ -408,14 +485,31 @@
       row.appendChild(input);
       row.appendChild(val);
       c.appendChild(row);
+      if (def.key === 'mexEggPricePerDozen') {
+        const eq = document.createElement('div');
+        eq.id = 'mex-price-equiv';
+        eq.className = 'price-equiv';
+        c.appendChild(eq);
+      }
     });
   }
 
   function updateSliderValues() {
     [...flockSliders, ...plantSliders, ...costSliders].forEach(def => {
+      if (def.showWhen && !def.showWhen()) return;
       const el = document.getElementById('val-' + def.key);
       if (el) el.textContent = fmt[def.fmt](state[def.key]) + def.suffix;
     });
+    const eq = document.getElementById('mex-price-equiv');
+    if (eq) {
+      const p = state.mexEggPricePerDozen;
+      const lbsPerDz = state.eggMassWhole * 12 / 454;
+      const kgPerDz = state.eggMassWhole * 12 / 1000;
+      eq.innerHTML = `<span>$${p.toFixed(2)}/dz</span>` +
+        `<span>$${(p / lbsPerDz).toFixed(2)}/lb</span>` +
+        `<span>$${(p / kgPerDz).toFixed(2)}/kg</span>` +
+        `<span>MX$${(p / kgPerDz * state.fxUsdMxn).toFixed(2)}/kg</span>`;
+    }
   }
 
   function updateFlockSizeColor(c) {
@@ -430,6 +524,14 @@
     }
   }
 
+  function clampFlockToMode() {
+    if (state.sourcing === 'mexico') {
+      state.flockSize = Math.min(250000, Math.max(100000, Math.round(state.flockSize / 10000) * 10000));
+    } else {
+      state.flockSize = Math.min(250000, Math.max(60000, Math.round(state.flockSize / 1000) * 1000));
+    }
+  }
+
   function setupToggles(groupId, key) {
     const group = document.getElementById(groupId);
     group.addEventListener('click', e => {
@@ -438,6 +540,10 @@
       [...group.children].forEach(c => c.classList.remove('active'));
       t.classList.add('active');
       state[key] = t.dataset.val;
+      if (key === 'sourcing') {
+        clampFlockToMode();
+        renderAssumptions();
+      }
       clearPresetActive();
       buildSliders(flockSliders, 'flock-sliders');
       buildSliders(costSliders, 'cost-sliders');
@@ -447,24 +553,30 @@
 
   function calculate() {
     const s = state;
+    const isMex = s.sourcing === 'mexico';
     const eggsPerDay = s.flockSize * (s.layRate / 100);
     const eggsPerWeek = eggsPerDay * 7;
     const totalEggs = eggsPerWeek * s.layWeeks;
+    const totalDozens = totalEggs / 12;
     const abemHrsAvailable = s.abemShiftHrs * s.abemDaysPerWk;
     const eggMass = s.eggMassWhole;
     const solidsPct = s.solidsWhole;
     const moistureFactor = 1 - ((s.moistureRetention || 0) / 100);
     const liquidLbsPerWeek = (eggsPerWeek * eggMass) / 454;
     const totalLiquidLbs = liquidLbsPerWeek * s.layWeeks;
-    const solidsPerWeek = liquidLbsPerWeek * (solidsPct / 100);
+    // Mexico: slush totes carry a small transfer/heel loss between AVIGM's breaker and the
+    // dryer feed. We pay AVIGM on eggs laid (per dozen); solids come from usable lbs only.
+    const recoveryLoss = isMex ? ((s.recoveryLossPct || 0) / 100) : 0;
+    const usableLiquidLbs = totalLiquidLbs * (1 - recoveryLoss);
+    const recoveryLossLbs = totalLiquidLbs - usableLiquidLbs;
+    const solidsPerWeek = (usableLiquidLbs / s.layWeeks) * (solidsPct / 100);
     // Finished Cosabody base includes retained moisture: every lb of solids becomes
     // (1 / moistureFactor) lbs of base product. At 1.7% moisture, base = solids × 1.0173.
     const totalCosabody = (solidsPerWeek * s.layWeeks) / moistureFactor;
 
-    // Sugar dilution: bumps Cosabody base mass up to (raw / (1 - dilution)).
+    // Sulfate dilution: bumps Cosabody base mass up to (raw / (1 - dilution)).
     // Dilution applies to the dried Cosabody base BEFORE the HT split, so HT-bound
-    // and direct-ship Cosabody both inherit the dilution. Dilution material is sodium
-    // sulfate (was previously sugar; same mechanic, different material).
+    // and direct-ship Cosabody both inherit the dilution.
     const dilution = (s.sulfateDilutionPct || 0) / 100;
     const dilutionFactor = 1 - dilution;
     const dilutedCosabodyPerWeek = (totalCosabody / dilutionFactor) / s.layWeeks;
@@ -483,30 +595,47 @@
     const sodiumSulfateAdded = htAfterCoating * (s.htEncapsulationRate / 100);
     const sodiumSulfateCost = sodiumSulfateAdded * (s.sodiumSulfateCostPerLb || 0);
 
-    // dryingWeeks is now derived from the packed cadence further down (after the dryer
-    // schedule and water fraction are known), not fixed to the laying window.
-
     // Single Glatt/Dryer machine, single schedule. Encapsulation rate × days/wk.
     const days = s.dryerSchedule === '24-5' ? 5 : 6;
     const glattCapacityPerWeek = s.glattEncapPerDay * days;
 
     const is24_6 = s.dryerSchedule === '24-6';
     // Water removed per lb of liquid: liquid - finished_base = 1 - solids/(1 - moisture).
-    // At 1.7% moisture and 24.5% solids, that's 0.7508 vs the dry-only baseline of 0.7550.
     const waterFraction = 1 - ((solidsPct / 100) / moistureFactor);
     const startupCleanupHrs = s.dryerStartupCleanupHrs || 0;
+    const totalWaterLbs = usableLiquidLbs * waterFraction;
 
-    // Batch cadence: shell eggs accumulate two laying weeks per batch, then the single
-    // Glatt dries that batch in one week and coats it the next, alternating. The dryer
-    // cannot process eggs before they are laid, so the count of drying and coating weeks
-    // is set by the number of batches (one each per batch) — not by how fast the machine
-    // could run flat out. A faster schedule (24/6) buys more capacity per week, i.e.
-    // headroom for a larger batch to fit its one-week slot; it does not cut the week count.
-    const batches = Math.max(1, Math.ceil(s.layWeeks / 2));
-    const dryingWeeks = batches;
-    const coatingWeeks = batches;
-    // 24/6 runs a sixth day on every operating week, so each carries the premium; the
-    // payoff is more per-week capacity so larger per-batch loads still fit one week.
+    // DOMESTIC: batch cadence. Shell eggs accumulate two laying weeks per batch, then the
+    // single Glatt dries that batch in one week and coats it the next, alternating. Week
+    // counts are set by batch count, not machine speed; 24/6 buys per-week headroom.
+    // MEXICO: capacity-driven. Slush totes are storable inventory, so drying is decoupled
+    // from lay cadence and runs until the volume clears. Week counts come from machine
+    // capacity, with a CIP stop (startup/CIP hrs) every cipIntervalWks of continuous drying.
+    let batches, dryingWeeks, coatingWeeks, dryerHrsPerWeek;
+    if (!isMex) {
+      const batchW = parseInt(s.batchCollectWks) || 2;
+      batches = Math.max(1, Math.ceil(s.layWeeks / batchW));
+      dryingWeeks = batches;
+      coatingWeeks = s.coatingMode === 'packed'
+        ? Math.max(1, Math.ceil(htAfterCoating / glattCapacityPerWeek))
+        : batches;
+      dryerHrsPerWeek = (24 * days * dryingWeeks * (s.dryerEfficiency / 100) - startupCleanupHrs) / dryingWeeks;
+    } else {
+      batches = 0;
+      const hrsNeeded = s.glattWaterRate > 0 ? totalWaterLbs / s.glattWaterRate : 0;
+      const cipInterval = s.cipIntervalWks || 4;
+      let W = 1;
+      while (W < 400) {
+        const availHrs = 24 * days * (s.dryerEfficiency / 100) * W - startupCleanupHrs * Math.ceil(W / cipInterval);
+        if (availHrs >= hrsNeeded) break;
+        W++;
+      }
+      dryingWeeks = W;
+      coatingWeeks = Math.max(1, Math.ceil(htAfterCoating / glattCapacityPerWeek));
+      dryerHrsPerWeek = (24 * days * (s.dryerEfficiency / 100) * dryingWeeks - startupCleanupHrs * Math.ceil(dryingWeeks / cipInterval)) / dryingWeeks;
+    }
+
+    // 24/6 runs a sixth day on every operating week, so each carries the premium.
     const dryingHasPremium = is24_6;
     const coatingHasPremium = is24_6;
     const dryingWeeklyRate = s.plantBaseWeekly + (dryingHasPremium ? s.plantSixthDayPremium : 0);
@@ -516,70 +645,94 @@
     const dryingPhaseCost = dryingWeeks * dryingWeeklyRate;
     const coatingPhaseCost = coatingWeeks * coatingWeeklyRate;
     const plantCost = dryingPhaseCost + coatingPhaseCost;
-    const birdCost = (totalEggs / 12) * s.eggCostPerDozen;
-    const inoculantCost = s.inoculantPerBird * s.flockSize;
 
-    // Ovotech UDTJ-150 breaking at AbEM: two machines cycled for sanitation, so one is
-    // always breaking at its rated throughput while its twin is cleaned. Effective sustained
-    // rate = one machine's rate. Cost = throughput hours × crew wage + one-time capex for
-    // the pair. Maintenance is negligible vs the old Optibreaker.
+    // Misc: lab testing, packaging, labels, consumables. Scales with campaign length,
+    // expressed as a percentage of plant cost (editable assumption).
+    const miscCost = plantCost * ((s.miscPctOfPlant || 0) / 100);
+
+    // Egg line: domestic buys shell eggs by the dozen; Mexico buys AVIGM slush liquid,
+    // priced per dozen of eggs broken (AVIGM's price is all-in for birds, lay, breaking,
+    // totes, and their leg of freight to Laredo). Optum supplies inoculant in both modes.
+    const birdCost = isMex ? 0 : totalDozens * s.eggCostPerDozen;
+    const liquidPurchaseCost = isMex ? totalDozens * s.mexEggPricePerDozen : 0;
+    const eggLineCost = birdCost + liquidPurchaseCost;
+    const inoculantCost = s.inoculantPerBird * s.flockSize + (s.inoculantFixed || 0);
+
+    // Ovotech UDTJ-150 breaking at AbEM (domestic only): two machines cycled for sanitation.
+    // Mexico mode: AVIGM breaks at source; dumping and re-pasteurization of arriving slush
+    // are inside AbEM plant processing cost.
     const effectiveRate = s.breakerEggsPerHr * ((s.breakerEfficiency || 100) / 100);
     const totalBreakingHrs = totalEggs / effectiveRate;
     const crewRate = s.breakingCrewSize * s.breakingWagePerHead;
     const breakingLabor = totalBreakingHrs * crewRate;
-    const breakingCost = breakingLabor + s.breakerCapex;
-    const breakingDetail = `${totalBreakingHrs.toFixed(0)} breaker-hrs (${fmt.numKM(totalEggs)} eggs ÷ ${fmt.numKM(effectiveRate)}/hr, ${s.breakerCount}× UDTJ-150 cycled) × ${s.breakingCrewSize} crew @ $${s.breakingWagePerHead}/hr = ${fmt.moneyKM(breakingLabor)} labor + ${fmt.moneyKM(s.breakerCapex)} capex`;
+    const breakingCost = isMex ? 0 : (breakingLabor + s.breakerCapex + (s.washCost || 0));
+    const breakingDetail = isMex
+      ? 'none (AVIGM breaks at source)'
+      : `${totalBreakingHrs.toFixed(0)} breaker-hrs (${fmt.numKM(totalEggs)} eggs ÷ ${fmt.numKM(effectiveRate)}/hr, ${s.breakerCount}× UDTJ-150 cycled) × ${s.breakingCrewSize} crew @ $${s.breakingWagePerHead}/hr = ${fmt.moneyKM(breakingLabor)} labor + ${fmt.moneyKM(s.breakerCapex)} capex${(s.washCost || 0) > 0 ? ' + ' + fmt.moneyKM(s.washCost) + ' wash' : ''}`;
 
-    // Logistics: shell eggs trucked farm to AbEM in full refrigerated semis. A reefer holds
-    // ~259,200 eggs (720 cases × 360), so at 100K/82% (~82,000 eggs/day) a load fills in
-    // about 3 days and the campaign runs ~4-5 loads per two-week batch.
-    const truckLoads = Math.max(1, Math.ceil(totalEggs / s.truckEggCapacity));
-    const totalLogistics = truckLoads * s.logisticsFarmToBreaker;
-    const totalCost = birdCost + inoculantCost + plantCost + breakingCost + totalLogistics + sulfateDilutionCost + sodiumSulfateCost;
+    // Logistics. Domestic: shell eggs trucked farm to AbEM in full reefers.
+    // Mexico: 950kg slush totes, 20 to a 19,000kg truck, Laredo to Waterloo on Optum's
+    // account ($/truck includes border/broker; AVIGM covers origin to Laredo).
+    const totalLiquidKg = (totalEggs * eggMass) / 1000;
+    const toteCount = isMex ? Math.max(1, Math.ceil(totalLiquidKg / s.toteKg)) : 0;
+    const truckLoads = isMex
+      ? Math.max(1, Math.ceil(totalLiquidKg / s.truckCapacityKg))
+      : Math.max(1, Math.ceil(totalEggs / s.truckEggCapacity));
+    const totalLogistics = truckLoads * (isMex ? s.mexTruckCost : s.logisticsFarmToBreaker);
+
+    const totalCost = eggLineCost + inoculantCost + plantCost + miscCost + breakingCost + totalLogistics + sulfateDilutionCost + sodiumSulfateCost;
     const costPerLb = totalFinishedProduct > 0 ? totalCost / totalFinishedProduct : 0;
 
-    // Phase totals: drying phase carries every cost except sodium sulfate (which is added
-    // during coating). Useful for cash-flow planning since drying-phase burn is much heavier.
-    const dryingPhaseTotal = dryingPhaseCost + birdCost + inoculantCost + breakingCost + totalLogistics + sulfateDilutionCost;
-    const coatingPhaseTotal = coatingPhaseCost + sodiumSulfateCost;
+    // Phase totals: drying phase carries every cost except sodium sulfate (encap, added
+    // during coating). Misc is pro-rated across phases by week count.
+    const miscDry = plantWeeks > 0 ? miscCost * (dryingWeeks / plantWeeks) : 0;
+    const miscCoat = miscCost - miscDry;
+    const dryingPhaseTotal = dryingPhaseCost + miscDry + eggLineCost + inoculantCost + breakingCost + totalLogistics + sulfateDilutionCost;
+    const coatingPhaseTotal = coatingPhaseCost + miscCoat + sodiumSulfateCost;
 
-    // Dryer capacity per operating week, from Glatt water-removal rate, schedule, feed water
-    // fraction and efficiency. One-time startup/cleanup hours are amortized across the
-    // drying weeks.
-    const dryerHrsPerWeek = (24 * days * dryingWeeks * (s.dryerEfficiency / 100) - startupCleanupHrs) / dryingWeeks;
     const waterCapPerWeek = dryerHrsPerWeek * s.glattWaterRate;
-    const dryerLiquidCapacity = waterCapPerWeek / waterFraction;
-    // Each drying week processes one batch (two laying weeks of liquid). Utilization is that
-    // batch load against the week's capacity — near 100% means the batch just fits its slot;
-    // over 100% means the batch won't fit and needs the sixth day or a smaller flock.
-    const processedLiquidPerDryWeek = totalLiquidLbs / dryingWeeks;
-    const dryerUtil = processedLiquidPerDryWeek / dryerLiquidCapacity;
+    const dryerLiquidCapacity = waterFraction > 0 ? waterCapPerWeek / waterFraction : 0;
+    const processedLiquidPerDryWeek = usableLiquidLbs / dryingWeeks;
+    const dryerUtil = dryerLiquidCapacity > 0 ? processedLiquidPerDryWeek / dryerLiquidCapacity : 0;
     const glattRequired = htAfterCoating / coatingWeeks;
     const glattUtil = glattRequired / glattCapacityPerWeek;
-    // Breaker effective rate: max throughput × efficiency (e.g. 26 pallets realistic vs 30 max).
     const breakerEffectiveRate = s.breakerEggsPerHr * ((s.breakerEfficiency || 100) / 100);
     const breakerHrsNeeded = eggsPerWeek / breakerEffectiveRate;
-    const breakerOK = breakerHrsNeeded <= abemHrsAvailable;
+    const breakerOK = isMex ? true : (breakerHrsNeeded <= abemHrsAvailable);
 
     const revenue = totalFinishedProduct * s.pricingPerLb;
     const netPL = revenue - totalCost;
 
+    // Egg price back-solve (both modes), in $/dozen: the max we can pay for eggs, AVIGM
+    // or domestic. True breakeven zeroes net P/L; the buffered max holds marginBufferPct
+    // of revenue as margin so pricing is not riding the line.
+    let breakevenEggPerDozen = 0, maxEggPerDozen = 0;
+    if (totalDozens > 0) {
+      const nonEggCosts = totalCost - eggLineCost;
+      breakevenEggPerDozen = (revenue - nonEggCosts) / totalDozens;
+      maxEggPerDozen = (revenue * (1 - (s.marginBufferPct || 0) / 100) - nonEggCosts) / totalDozens;
+    }
+
     return {
-      eggsPerDay, eggsPerWeek, totalEggs,
-      liquidLbsPerWeek, totalLiquidLbs,
+      isMex,
+      eggsPerDay, eggsPerWeek, totalEggs, totalDozens,
+      liquidLbsPerWeek, totalLiquidLbs, totalLiquidKg,
+      usableLiquidLbs, recoveryLossLbs,
       solidsPerWeek, totalCosabody,
       dilutedSolidsPerWeek, dilutedCosabodyPerWeek, dilutedCosabody, sulfateDilutionAdded, sulfateDilutionCost,
       htBase, htAfterCoating, cosabodyRemaining, totalFinishedProduct,
       sodiumSulfateAdded, sodiumSulfateCost,
       eggMass, solidsPct, dryingWeeks, coatingWeeks, plantWeeks,
-      birdCost, inoculantCost, plantCost, dryingPhaseCost, coatingPhaseCost,
+      birdCost, liquidPurchaseCost, eggLineCost, inoculantCost,
+      plantCost, miscCost, dryingPhaseCost, coatingPhaseCost,
       dryingPhaseTotal, coatingPhaseTotal, dryingHasPremium, coatingHasPremium,
       breakingCost, breakingDetail,
-      totalLogistics, truckLoads, batches,
+      totalLogistics, truckLoads, toteCount, batches,
       totalCost, costPerLb, revenue, netPL,
       dryerUtil, dryerLiquidCapacity, glattUtil, glattCapacityPerWeek,
       processedLiquidPerDryWeek,
       breakerHrsNeeded, abemHrsAvailable, breakerOK,
+      breakevenEggPerDozen, maxEggPerDozen,
     };
   }
 
@@ -622,15 +775,18 @@
     marginCard.classList.add(marginPct >= 0 ? 'positive' : 'negative');
     document.getElementById('margin-value').textContent =
       (marginPct >= 0 ? '+' : '') + marginPct.toFixed(1) + '%';
-    const marginPerLb = state.pricingPerLb - c.costPerLb;
     document.getElementById('margin-detail').textContent =
-      `${marginPerLb >= 0 ? '+' : ''}$${marginPerLb.toFixed(2)}/lb at $${state.pricingPerLb.toFixed(2)} price`;
+      `Of revenue at $${state.pricingPerLb.toFixed(2)}/lb reference`;
   }
 
   function renderWarnings(c) {
     const warns = [];
     if (c.netPL < 0) {
       warns.push({ type: 'warn', msg: 'Operating at a loss.' });
+    }
+    const activeEggPrice = c.isMex ? state.mexEggPricePerDozen : state.eggCostPerDozen;
+    if (activeEggPrice > c.maxEggPerDozen + 0.0005) {
+      warns.push({ type: 'info', msg: `Egg price above ${state.marginBufferPct}% margin max.` });
     }
     if (c.dryerUtil > 1.001) {
       warns.push({ type: 'warn', msg: `Dryer overloaded at ${(c.dryerUtil*100).toFixed(0)}%.` });
@@ -647,11 +803,12 @@
   function renderBreakdown(c) {
     const rawMaterials = c.sulfateDilutionCost + c.sodiumSulfateCost;
     const items = [
-      { label: 'Raw eggs', value: c.birdCost, color: '#75C147' },
+      { label: c.isMex ? 'AVIGM eggs' : 'Raw eggs', value: c.eggLineCost, color: '#75C147' },
       { label: 'Inoculant', value: c.inoculantCost, color: '#10A040' },
       { label: 'Glatt', value: c.plantCost, color: '#3F8FB5' },
+      { label: 'Misc', value: c.miscCost, color: '#8E9AAF' },
       { label: 'Breaking', value: c.breakingCost, color: '#70C0E0' },
-      { label: 'Raw materials', value: rawMaterials, color: '#8E9AAF' },
+      { label: 'Raw materials', value: rawMaterials, color: '#B49BC8' },
       { label: 'Logistics', value: c.totalLogistics, color: '#F0D030' },
     ].filter(i => i.value > 0).sort((a, b) => b.value - a.value);
 
@@ -659,7 +816,6 @@
     const max = Math.max(...items.map(i => i.value)) || 1;
     const rowsHtml = items.map(i => {
       const pct = (i.value / total) * 100;
-      const weekly = i.value / c.plantWeeks;
       const barWidth = (i.value / max) * 100;
       return `<div class="bar-row"><div class="bar-label">${i.label}</div><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%; background:${i.color};"></div></div><div class="bar-value-stack"><span class="v-main">${fmt.moneyKM(i.value)}</span><span class="v-sub">${pct.toFixed(1)}%</span></div></div>`;
     }).join('');
@@ -674,15 +830,23 @@
     const plantStr = Math.round(dryRate) === Math.round(coatRate)
       ? `${c.dryingWeeks} drying wk + ${c.coatingWeeks} coating wk @ $${dryRate.toFixed(0)}K/wk`
       : `${c.dryingWeeks} drying wk @ $${dryRate.toFixed(0)}K/wk + ${c.coatingWeeks} coating wk @ $${coatRate.toFixed(0)}K/wk`;
-    let foot = `Glatt = ${plantStr} (single machine, drying and coating interleaved). `;
-    foot += `Inoculant = $${state.inoculantPerBird.toFixed(2)}/bird × ${fmt.numKM(state.flockSize)} = ${fmt.moneyKM(c.inoculantCost)}. `;
-    foot += `Breaking = ${c.breakingDetail}. `;
+    let foot = `Glatt = ${plantStr} (single machine${c.isMex ? ', capacity-driven, drying then coating' : ', drying and coating interleaved'}). `;
+    if (c.isMex) {
+      foot += `AVIGM eggs = ${fmt.numKM(c.totalDozens)} dozen × $${state.mexEggPricePerDozen.toFixed(2)}/dozen = ${fmt.moneyKM(c.liquidPurchaseCost)} (all-in: birds, lay, breaking, totes, freight to Laredo). `;
+    }
+    foot += `Inoculant = $${state.inoculantPerBird.toFixed(2)}/bird × ${fmt.numKM(state.flockSize)}${(state.inoculantFixed || 0) > 0 ? ' + ' + fmt.moneyKM(state.inoculantFixed) + ' fixed' : ''} = ${fmt.moneyKM(c.inoculantCost)} (Optum supplies). `;
+    foot += `Misc = ${state.miscPctOfPlant}% of plant = ${fmt.moneyKM(c.miscCost)} (lab testing, packaging, labels, consumables). `;
+    if (!c.isMex) foot += `Breaking = ${c.breakingDetail}. `;
     const rawParts = [];
     if (c.sodiumSulfateCost > 0) rawParts.push(`sodium sulfate (encap) ${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}`);
     if (c.sulfateDilutionCost > 0) rawParts.push(`sodium sulfate (dilution) ${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}`);
     if (rawParts.length > 0) foot += `Raw materials = ${rawParts.join(' + ')}. `;
-    foot += `Logistics = ${c.truckLoads} reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each) × ${fmt.moneyKM(state.logisticsFarmToBreaker)}. `;
-    foot += `Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks. Note: lab fees and miscellaneous consumables not included; could add up to $0.10/lb.`;
+    if (c.isMex) {
+      foot += `Logistics = ${fmt.int(c.truckLoads)} trucks Laredo to Waterloo (${fmt.int(c.toteCount)} totes @ ${state.toteKg}kg, ${fmt.numKM(state.truckCapacityKg)}kg/truck) × ${fmt.moneyKM(state.mexTruckCost)}; broker/border fees inside the truck rate; AVIGM covers origin to Laredo. `;
+    } else {
+      foot += `Logistics = ${fmt.int(c.truckLoads)} reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each) × ${fmt.moneyKM(state.logisticsFarmToBreaker)}. `;
+    }
+    foot += `Avg burn = ${fmt.moneyKM(burnPerWk)}/wk over ${c.plantWeeks} plant weeks.`;
     document.getElementById('footnote').textContent = foot;
   }
 
@@ -692,68 +856,86 @@
     const totalWeeks = c.dryingWeeks + c.coatingWeeks;
     const dryBadge = c.dryingHasPremium ? ' <span class="phase-premium">+ 6th day</span>' : '';
     const coatBadge = c.coatingHasPremium ? ' <span class="phase-premium">+ 6th day</span>' : '';
+    const dryMeta = c.isMex
+      ? `${fmt.moneyKM(dryingBurn)}/wk · plant + misc + AVIGM eggs + inoculant + trucking${c.sulfateDilutionCost > 0 ? ' + sulfate (dilution)' : ''}`
+      : `${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sulfateDilutionCost > 0 ? ' + sulfate (dilution)' : ''}`;
     const html = `
       <div class="phase-timeline">
         <div class="phase-segment phase-drying" style="flex: ${c.dryingWeeks};">
           <div class="phase-name">Drying · ${c.dryingWeeks} wk${dryBadge}</div>
           <div class="phase-total"><span class="phase-total-label">Total Phase Cost:</span> ${fmt.moneyKM(c.dryingPhaseTotal)}</div>
-          <div class="phase-meta">${fmt.moneyKM(dryingBurn)}/wk · plant + eggs + inoculant + breaking + logistics${c.sulfateDilutionCost > 0 ? ' + sulfate (dilution)' : ''}</div>
+          <div class="phase-meta">${dryMeta}</div>
         </div>
         <div class="phase-segment phase-coating" style="flex: ${c.coatingWeeks};">
           <div class="phase-name">Coating · ${c.coatingWeeks} wk${coatBadge}</div>
           <div class="phase-total"><span class="phase-total-label">Total Phase Cost:</span> ${fmt.moneyKM(c.coatingPhaseTotal)}</div>
-          <div class="phase-meta">${fmt.moneyKM(coatingBurn)}/wk · plant + sodium sulfate</div>
+          <div class="phase-meta">${fmt.moneyKM(coatingBurn)}/wk · plant + misc + sodium sulfate</div>
         </div>
       </div>
       <div class="phase-axis">
         <span>Machine wk 1</span>
         <span class="ax-end">${totalWeeks} machine wk</span>
       </div>
-      <div class="footnote">Drying and coating interleave on one Glatt; segments show billed machine-weeks (${c.dryingWeeks} dry + ${c.coatingWeeks} coat = ${totalWeeks}). Calendar runs ~${state.layWeeks} laying weeks plus a short processing tail as the last batch clears.</div>
+      <div class="footnote">${c.isMex
+        ? `Capacity-driven: ${c.dryingWeeks} drying + ${c.coatingWeeks} coating = ${totalWeeks} machine weeks on one Glatt, with a CIP stop every ${state.cipIntervalWks} drying weeks. Slush inventory is storable, so drying overlaps the ${state.layWeeks} lay weeks; the last coating week lands around lay start + ${Math.max(state.layWeeks, c.dryingWeeks) + c.coatingWeeks} weeks.`
+        : `Drying and coating interleave on one Glatt; segments show billed machine-weeks (${c.dryingWeeks} dry + ${c.coatingWeeks} coat = ${totalWeeks}). Calendar runs ~${state.layWeeks} laying weeks plus a short processing tail as the last batch clears.`}</div>
     `;
     document.getElementById('phase-timeline').innerHTML = html;
   }
 
   function renderThroughput(c) {
     const daysN = state.dryerSchedule === '24-5' ? 5 : 6;
-    const eggsPerBatch = c.totalEggs / c.dryingWeeks;
-    const htPerBatch = c.htAfterCoating / c.coatingWeeks;
-    const effRate = state.breakerEggsPerHr * (state.breakerEfficiency / 100);
-    const breakHrsPerBatch = eggsPerBatch / effRate;
-    const dryPct = (c.dryerUtil * 100).toFixed(0);
-    const coatPct = (c.glattUtil * 100).toFixed(0);
-    const dryFlag = c.dryerUtil > 1.001 ? ' <span class="premium-tag">over 1 wk</span>' : '';
-    const coatFlag = c.glattUtil > 1.001 ? ' <span class="premium-tag">over 1 wk</span>' : '';
-    const html = `
-      <div class="stat-row"><span>Flock @ lay rate</span><strong>${fmt.numKM(state.flockSize)} @ ${state.layRate}%</strong></div>
-      <div class="stat-row"><span>Eggs / day · week</span><strong>${fmt.numKM(c.eggsPerDay)} · ${fmt.numKM(c.eggsPerWeek)}</strong></div>
-      <div class="stat-row"><span>Liquid / week (${c.solidsPct.toFixed(1)}% solids)</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs</strong></div>
+    let html;
+    if (c.isMex) {
+      const totesPerTruck = Math.floor(state.truckCapacityKg / state.toteKg);
+      html = `
+        <div class="stat-row"><span>Flock @ lay rate (AVIGM, Mexico)</span><strong>${fmt.numKM(state.flockSize)} @ ${state.layRate}%</strong></div>
+        <div class="stat-row"><span>Eggs / day · week</span><strong>${fmt.numKM(c.eggsPerDay)} · ${fmt.numKM(c.eggsPerWeek)}</strong></div>
+        <div class="stat-row"><span>Liquid / week (${c.solidsPct.toFixed(1)}% solids)</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs</strong></div>
 
-      <div class="cadence-head">Cadence · collect 2 wk → dry 1 wk → coat 1 wk</div>
-      <div class="stat-row"><span>1 batch = 2 laying weeks</span><strong>${fmt.numKM(eggsPerBatch)} eggs · ${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid</strong></div>
-      <div class="stat-row"><span>Reefer deliveries / batch (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${(eggsPerBatch / state.truckEggCapacity).toFixed(1)} loads</strong></div>
-      <div class="stat-row"><span>Break + dry that batch: 1 wk @ 24/${daysN}</span><strong>dryer ${dryPct}% of ${fmt.numKM(c.dryerLiquidCapacity)} lbs${dryFlag}</strong></div>
-      <div class="stat-row"><span>Coat that batch: 1 wk @ 24/${daysN}</span><strong>encap ${coatPct}% of ${fmt.numKM(c.glattCapacityPerWeek)} lbs${coatFlag}</strong></div>
-      <div class="stat-row"><span>Breaker time / batch (${state.breakerCount}× UDTJ-150)</span><strong>${breakHrsPerBatch.toFixed(0)} hr</strong></div>
+        <div class="cadence-head">Material Summary</div>
+        <div class="stat-row"><span>Slush totes (${state.toteKg} kg each)</span><strong>${fmt.int(c.toteCount)}</strong></div>
+        <div class="stat-row"><span>Trucks (${fmt.numKM(state.truckCapacityKg)} kg, ${totesPerTruck} totes each)</span><strong>${fmt.int(c.truckLoads)}</strong></div>
 
-      <div class="stat-row"><span>Batches over campaign</span><strong>${c.batches}</strong></div>
-      <div class="stat-row"><span>Plant weeks (dry + coat, interleaved)</span><strong>${c.dryingWeeks} + ${c.coatingWeeks} = ${c.plantWeeks}</strong></div>
-    `;
+        <div class="cadence-head">Campaign Summary</div>
+        <div class="stat-row"><span>Drying: ${c.dryingWeeks} wk @ 24/${daysN}, CIP every ${state.cipIntervalWks} wk</span><strong>dryer ${(c.dryerUtil * 100).toFixed(0)}% of ${fmt.numKM(c.dryerLiquidCapacity)} lbs/wk</strong></div>
+        <div class="stat-row"><span>Coating: ${c.coatingWeeks} wk @ 24/${daysN}</span><strong>encap ${(c.glattUtil * 100).toFixed(0)}% of ${fmt.numKM(c.glattCapacityPerWeek)} lbs/wk</strong></div>
+        <div class="stat-row"><span>Plant weeks (dry + coat)</span><strong>${c.dryingWeeks} + ${c.coatingWeeks} = ${c.plantWeeks}</strong></div>
+      `;
+    } else {
+      const eggsPerBatch = c.totalEggs / c.dryingWeeks;
+      const effRate = state.breakerEggsPerHr * (state.breakerEfficiency / 100);
+      const breakHrsPerBatch = eggsPerBatch / effRate;
+      const dryPct = (c.dryerUtil * 100).toFixed(0);
+      const coatPct = (c.glattUtil * 100).toFixed(0);
+      const dryFlag = c.dryerUtil > 1.001 ? ' <span class="premium-tag">over 1 wk</span>' : '';
+      const coatFlag = c.glattUtil > 1.001 ? ' <span class="premium-tag">over 1 wk</span>' : '';
+      html = `
+        <div class="stat-row"><span>Flock @ lay rate</span><strong>${fmt.numKM(state.flockSize)} @ ${state.layRate}%</strong></div>
+        <div class="stat-row"><span>Eggs / day · week</span><strong>${fmt.numKM(c.eggsPerDay)} · ${fmt.numKM(c.eggsPerWeek)}</strong></div>
+        <div class="stat-row"><span>Liquid / week (${c.solidsPct.toFixed(1)}% solids)</span><strong>${fmt.numKM(c.liquidLbsPerWeek)} lbs</strong></div>
+
+        <div class="cadence-head">Cadence · collect ${state.batchCollectWks} wk → dry 1 wk → ${state.coatingMode === 'packed' ? 'coat packed' : 'coat 1 wk'}</div>
+        <div class="stat-row"><span>1 batch = ${state.batchCollectWks} laying weeks</span><strong>${fmt.numKM(eggsPerBatch)} eggs · ${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid</strong></div>
+        <div class="stat-row"><span>Reefer deliveries / batch (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${(eggsPerBatch / state.truckEggCapacity).toFixed(1)} loads</strong></div>
+        <div class="stat-row"><span>Break + dry that batch: 1 wk @ 24/${daysN}</span><strong>dryer ${dryPct}% of ${fmt.numKM(c.dryerLiquidCapacity)} lbs${dryFlag}</strong></div>
+        <div class="stat-row"><span>${state.coatingMode === 'packed' ? `Coating, packed: ${c.coatingWeeks} wk` : 'Coat that batch: 1 wk'} @ 24/${daysN}</span><strong>encap ${coatPct}% of ${fmt.numKM(c.glattCapacityPerWeek)} lbs${coatFlag}</strong></div>
+        <div class="stat-row"><span>Breaker time / batch (${state.breakerCount}× UDTJ-150)</span><strong>${breakHrsPerBatch.toFixed(0)} hr</strong></div>
+
+        <div class="stat-row"><span>Batches over campaign</span><strong>${c.batches}</strong></div>
+        <div class="stat-row"><span>Plant weeks (dry + coat, interleaved)</span><strong>${c.dryingWeeks} + ${c.coatingWeeks} = ${c.plantWeeks}</strong></div>
+      `;
+    }
     document.getElementById('throughput-display').innerHTML = html;
   }
 
-  // Format a related group of values consistently. If any value in the group hits 1M+,
-  // render every value in M (2 decimals) so visual sums add up despite rounding tolerance.
-  function groupFmt(values) {
-    const max = Math.max(...values.map(Math.abs));
-    return max >= 1000000
-      ? (v) => (v / 1000000).toFixed(2) + 'M'
-      : (v) => fmt.numKM(v);
-  }
-
   function renderVolumeDetail(c) {
-    const f = groupFmt([c.dilutedCosabody, c.htAfterCoating, c.cosabodyRemaining, c.totalFinishedProduct]);
+    const f = fmt.numKM;
+    const lossRow = (c.isMex && c.recoveryLossLbs > 0)
+      ? `<div class="stat-row"><span>Recovery loss (${state.recoveryLossPct}% of delivered)</span><strong>${f(c.recoveryLossLbs)} lbs</strong></div>`
+      : '';
     const html = `
+      ${lossRow}
       <div class="stat-row"><span>Total Cosabody base produced</span><strong>${f(c.dilutedCosabody)} lbs</strong></div>
       <div class="stat-row"><span>HT after coating (${state.htSplitPct}%)</span><strong>${f(c.htAfterCoating)} lbs</strong></div>
       <div class="stat-row"><span>Cosabody remaining (${100-state.htSplitPct}%)</span><strong>${f(c.cosabodyRemaining)} lbs</strong></div>
@@ -763,10 +945,14 @@
   }
 
   function renderMaterialsDetail(c) {
-    const dozens = c.totalEggs / 12;
+    const dozens = c.totalDozens;
+    const liquidRow = c.isMex
+      ? `<div class="stat-row"><span>Liquid delivered (slush totes)</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs <span class="subtle">(${fmt.int(c.toteCount)} totes)</span></strong></div>
+         <div class="stat-row"><span>Liquid usable after recovery loss</span><strong>${fmt.numKM(c.usableLiquidLbs)} lbs</strong></div>`
+      : `<div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>`;
     const html = `
       <div class="stat-row"><span>Total eggs over campaign</span><strong>${fmt.numKM(c.totalEggs)} <span class="subtle">(${fmt.numKM(dozens)} dozen)</span></strong></div>
-      <div class="stat-row"><span>Total liquid product</span><strong>${fmt.numKM(c.totalLiquidLbs)} lbs</strong></div>
+      ${liquidRow}
       <div class="stat-row"><span>Sodium sulfate added (dilution)</span><strong>${fmt.numKM(c.sulfateDilutionAdded)} lbs</strong></div>
       <div class="stat-row"><span>Sodium sulfate added (encap, ${state.htEncapsulationRate}%)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs</strong></div>
     `;
@@ -774,7 +960,14 @@
   }
 
   function renderOutputDetail(c) {
-    const truckRow = `<div class="stat-row"><span>Reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${c.truckLoads} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.totalLogistics)}</strong></div>`;
+    const logisticsRow = c.isMex
+      ? `<div class="stat-row"><span>Trucks Laredo to Waterloo (${fmt.numKM(state.truckCapacityKg)} kg each)</span><strong>${fmt.int(c.truckLoads)} × ${fmt.moneyKM(state.mexTruckCost)} = ${fmt.moneyKM(c.totalLogistics)}</strong></div>`
+      : `<div class="stat-row"><span>Reefer loads (${fmt.numKM(state.truckEggCapacity)} eggs each)</span><strong>${fmt.int(c.truckLoads)} × ${fmt.moneyKM(state.logisticsFarmToBreaker)} = ${fmt.moneyKM(c.totalLogistics)}</strong></div>`;
+    const eggRow = c.isMex
+      ? `<div class="stat-row"><span>AVIGM eggs @ $${state.mexEggPricePerDozen.toFixed(2)}/dozen</span><strong>${fmt.moneyKM(c.liquidPurchaseCost)}</strong></div>`
+      : '';
+    const backSolveRows = `<div class="stat-row"><span>Breakeven egg price <span class="subtle">(net $0)</span></span><strong>${fmt.money2(c.breakevenEggPerDozen)}/dozen</strong></div>
+         <div class="stat-row"><span>Max egg price @ ${state.marginBufferPct}% margin</span><strong class="profit-val">${fmt.money2(c.maxEggPerDozen)}/dozen</strong></div>`;
     const sulfateEncapRow = `<div class="stat-row"><span>Sodium sulfate (encap)</span><strong>${fmt.numKM(c.sodiumSulfateAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sodiumSulfateCost)}</strong></div>`;
     const sulfateDilutionRow = `<div class="stat-row"><span>Sodium sulfate (dilution)</span><strong>${fmt.numKM(c.sulfateDilutionAdded)} lbs × $${state.sodiumSulfateCostPerLb.toFixed(2)} = ${fmt.moneyKM(c.sulfateDilutionCost)}</strong></div>`;
     const html = `
@@ -782,8 +975,9 @@
       <div class="stat-row"><span>Cost per lb finished</span><strong>$${c.costPerLb.toFixed(2)}</strong></div>
       <div class="stat-row"><span>Revenue at $${state.pricingPerLb.toFixed(2)}/lb</span><strong>${fmt.moneyKM(c.revenue)}</strong></div>
       <div class="stat-row"><span>Net profit/loss <span class="subtle">(Revenue − Costs)</span></span><strong class="${c.netPL < 0 ? 'loss-val' : 'profit-val'}">${c.netPL >= 0 ? '+' : '−'}${fmt.moneyKM(Math.abs(c.netPL))}</strong></div>
-      <div class="stat-row"><span>Margin per lb</span><strong>$${(state.pricingPerLb - c.costPerLb).toFixed(2)}</strong></div>
-      ${truckRow}
+      ${eggRow}
+      ${backSolveRows}
+      ${logisticsRow}
       ${sulfateEncapRow}
       ${sulfateDilutionRow}
     `;
@@ -793,40 +987,52 @@
   function renderBottleneck(c) {
     const stages = [];
     const daysN = state.dryerSchedule === '24-5' ? 5 : 6;
-    const eggsPerBatch = c.totalEggs / c.dryingWeeks;
-    const htPerBatch = c.htAfterCoating / c.coatingWeeks;
 
-    // Each stage is checked against one batch (two laying weeks) in its one-week slot.
+    if (c.isMex) {
+      // Capacity-driven: per-week loads against per-week capacity. Utilization lands at or
+      // under 100% by construction (week counts are solved from capacity); it reads as how
+      // tightly the campaign is packed.
+      stages.push({
+        label: `Glatt drying (per week)`,
+        need: `${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid`,
+        cap: `${fmt.numKM(c.dryerLiquidCapacity)} lbs liquid`,
+        util: c.dryerUtil,
+      });
+      stages.push({
+        label: `Glatt coating (per week)`,
+        need: `${fmt.numKM(c.htAfterCoating / c.coatingWeeks)} lbs HT`,
+        cap: `${fmt.numKM(c.glattCapacityPerWeek)} lbs HT`,
+        util: c.glattUtil,
+      });
+    } else {
+      const eggsPerBatch = c.totalEggs / c.dryingWeeks;
+      const htPerBatch = c.htAfterCoating / c.coatingWeeks;
+      // Each stage is checked against one batch (two laying weeks) in its one-week slot.
+      const effRate = state.breakerEggsPerHr * (state.breakerEfficiency / 100);
+      const brkCap = effRate * 24 * daysN;
+      stages.push({
+        label: `Ovotech breakers (per batch)`,
+        need: `${fmt.numKM(eggsPerBatch)} eggs`,
+        cap: `${fmt.numKM(brkCap)} eggs`,
+        util: eggsPerBatch / brkCap,
+      });
+      stages.push({
+        label: `Glatt drying (per batch)`,
+        need: `${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid`,
+        cap: `${fmt.numKM(c.dryerLiquidCapacity)} lbs liquid`,
+        util: c.dryerUtil,
+      });
+      stages.push({
+        label: `Glatt coating (per batch)`,
+        need: `${fmt.numKM(htPerBatch)} lbs HT`,
+        cap: `${fmt.numKM(c.glattCapacityPerWeek)} lbs HT`,
+        util: c.glattUtil,
+      });
+    }
 
-    // Breaker: can the pair clear a batch within the drying week's operating window?
-    const effRate = state.breakerEggsPerHr * (state.breakerEfficiency / 100);
-    const brkCap = effRate * 24 * daysN;
-    stages.push({
-      label: `Ovotech breakers (per batch)`,
-      need: `${fmt.numKM(eggsPerBatch)} eggs`,
-      cap: `${fmt.numKM(brkCap)} eggs`,
-      util: eggsPerBatch / brkCap,
-    });
-
-    // Glatt drying: does a batch of liquid fit one drying week?
-    stages.push({
-      label: `Glatt drying (per batch)`,
-      need: `${fmt.numKM(c.processedLiquidPerDryWeek)} lbs liquid`,
-      cap: `${fmt.numKM(c.dryerLiquidCapacity)} lbs liquid`,
-      util: c.dryerUtil,
-    });
-
-    // Glatt coating: does a batch of HT fit one coating week?
-    stages.push({
-      label: `Glatt coating (per batch)`,
-      need: `${fmt.numKM(htPerBatch)} lbs HT`,
-      cap: `${fmt.numKM(c.glattCapacityPerWeek)} lbs HT`,
-      util: c.glattUtil,
-    });
-
-    const headerHtml = `<div class="bn-row bn-header"><div>Stage</div><div>Per batch</div><div>1-wk capacity</div><div>Load</div><div>Util</div></div>`;
+    const headerHtml = `<div class="bn-row bn-header"><div>Stage</div><div>${c.isMex ? 'Per week' : 'Per batch'}</div><div>1-wk capacity</div><div>Load</div><div>Util</div></div>`;
     const rowsHtml = stages.map(s => {
-      const utilPct = s.util * 100;
+      const utilPct = (s.util || 0) * 100;
       let cls = 'green';
       let barColor = 'var(--green-dark)';
       if (s.info) { cls = 'info'; barColor = 'var(--gray-mid)'; }
@@ -838,6 +1044,9 @@
     }).join('');
 
     document.getElementById('bottleneck').innerHTML = headerHtml + rowsHtml;
+    document.getElementById('bottleneck-footnote').textContent = c.isMex
+      ? `Capacity-driven mode: drying and coating week counts are solved so each stage fits its per-week capacity, so utilization reads as packing tightness, not overload risk. AVIGM breaks at source; dumping and re-pasteurization of arriving slush are inside AbEM plant processing.`
+      : `Each batch is two laying weeks of shell eggs, trucked in as one load. The single Glatt breaks and dries that batch in one week, then coats it the next, bouncing between the two modes. Utilization is one batch against a one-week slot: near 100% means it just fits; over 100% (red) means the batch overruns the week and needs the sixth day or a smaller flock.`;
   }
 
   function formatAssumptionValue(v, def) {
@@ -859,6 +1068,8 @@
     editableAssumptions.forEach(def => {
       const row = document.createElement('div');
       row.className = 'ass-row';
+      const isDisabled = (def.domOnly && state.sourcing === 'mexico') || (def.mexOnly && state.sourcing === 'domestic');
+      if (isDisabled) row.classList.add('disabled');
 
       const label = document.createElement('span');
       label.className = 'ass-label';
@@ -871,8 +1082,9 @@
       input.inputMode = 'decimal';
       input.value = formatAssumptionValue(state[def.key], def);
       input.dataset.key = def.key;
+      input.disabled = isDisabled;
       const isModified = ASSUMPTION_DEFAULTS[def.key] !== undefined && state[def.key] !== ASSUMPTION_DEFAULTS[def.key];
-      if (isModified) input.classList.add('modified');
+      if (isModified && !isDisabled) input.classList.add('modified');
 
       input.addEventListener('input', e => {
         const raw = e.target.value.replace(/,/g, '').trim();
@@ -929,8 +1141,17 @@
     recompute();
   }
 
+  function updateConfigVisibility() {
+    const mex = state.sourcing === 'mexico';
+    ['batch-row', 'coatmode-row'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = mex ? 'none' : 'grid';
+    });
+  }
+
   function recompute() {
     updateSliderValues();
+    updateConfigVisibility();
     const c = calculate();
     renderHeadline(c);
     renderWarnings(c);
@@ -947,24 +1168,38 @@
   buildSliders(flockSliders, 'flock-sliders');
   buildSliders(costSliders, 'cost-sliders');
 
+  setupToggles('sourcing-toggle', 'sourcing');
   setupToggles('dryer-toggle', 'dryerSchedule');
+  setupToggles('batch-toggle', 'batchCollectWks');
+  setupToggles('coatmode-toggle', 'coatingMode');
 
-  // Preset scenarios: a flock-size sensitivity around the 100K proposal (80K / 100K / 120K),
-  // whole egg, 80% HT split. Each carries the dryer schedule that lets a two-week batch fit
-  // its one-week drying slot: 80K and 100K clear on 24/5, while a 120K batch overruns five
-  // days and needs the sixth (24/6). Schedule and HT-split toggles stay live off the preset.
-  // Market inputs (egg $/dz, pricing, sulfate dilution) reset on each click.
+  // Preset scenarios. Domestic: flock-size sensitivity around the 100K proposal (80K / 100K
+  // / 120K), whole egg, 80% HT split, each carrying the dryer schedule that lets a two-week
+  // batch fit its one-week drying slot. Mexico: the 200K AVIGM slush-tote scenario on 24/6,
+  // capacity-driven. Market inputs reset on each click.
   const presets = {
     flock80: {
-      flockSize: 80000, dryerSchedule: '24-5',
+      sourcing: 'domestic', flockSize: 80000, dryerSchedule: '24-5',
       eggType: 'whole', htSplitPct: 80,
     },
     flock100: {
-      flockSize: 100000, dryerSchedule: '24-5',
+      sourcing: 'domestic', flockSize: 100000, dryerSchedule: '24-5',
       eggType: 'whole', htSplitPct: 80,
     },
     flock120: {
-      flockSize: 120000, dryerSchedule: '24-6',
+      sourcing: 'domestic', flockSize: 120000, dryerSchedule: '24-6',
+      eggType: 'whole', htSplitPct: 80,
+    },
+    wa69: {
+      sourcing: 'domestic', flockSize: 69000, dryerSchedule: '24-6',
+      eggType: 'whole', htSplitPct: 80, layWeeks: 50,
+      batchCollectWks: '3', coatingMode: 'packed',
+      layRate: 72, eggMassWhole: 67,
+      logisticsFarmToBreaker: 5000, washCost: 80000,
+      inoculantPerBird: 0, inoculantFixed: 225000,
+    },
+    mex200: {
+      sourcing: 'mexico', flockSize: 200000, dryerSchedule: '24-6',
       eggType: 'whole', htSplitPct: 80,
     },
   };
@@ -976,6 +1211,9 @@
   function syncTogglesToState() {
     const map = {
       'dryer-toggle': 'dryerSchedule',
+      'sourcing-toggle': 'sourcing',
+      'batch-toggle': 'batchCollectWks',
+      'coatmode-toggle': 'coatingMode',
     };
     Object.entries(map).forEach(([id, key]) => {
       const group = document.getElementById(id);
@@ -989,13 +1227,14 @@
   function applyPreset(name) {
     const p = presets[name];
     if (!p) return;
-    Object.assign(state, INPUT_DEFAULTS, p);
+    Object.assign(state, ASSUMPTION_DEFAULTS, INPUT_DEFAULTS, p);
     document.querySelectorAll('.preset-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.preset === name);
     });
     syncTogglesToState();
     buildSliders(flockSliders, 'flock-sliders');
     buildSliders(costSliders, 'cost-sliders');
+    renderAssumptions();
     recompute();
   }
 
